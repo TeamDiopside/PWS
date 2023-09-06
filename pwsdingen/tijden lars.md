@@ -7,5 +7,4 @@
 | 8/3  | 12:15 - 12:30 | 0:15 |  Gesprekje met De Kogel  |
 | 9/3  | 15:30 - 17:15 | 1:45 | Beginnen aan het project |
 | 22/3 | 12:15 - 12:30 | 0:15 |  Gesprekje met De Kogel  |
-
-|9/5|14:30 - 16:00|1:30|Werkmiddag|
+| 9/5  | 14:30 - 16:00 | 1:30 |        Werkmiddag        |
