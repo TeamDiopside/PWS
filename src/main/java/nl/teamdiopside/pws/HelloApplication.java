@@ -9,7 +9,7 @@ import javafx.stage.Stage;
 
 public class HelloApplication extends Application {
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws InterruptedException {
         Pane pane = new Pane();
 
         // Pat
@@ -17,21 +17,22 @@ public class HelloApplication extends Application {
         path.setStroke(Color.BLUE); // Stroke color
 
         // Wat doet grafriek
-        double startX = 1;
-        double endX = 100;
+        double startT = 0;
+        double endT = 100;
         double increment = 0.1;
 
-        for (double x = startX; x <= endX; x += increment) {
+        for (double t = startT; t <= endT; t += increment) {
 
-            double y = function(x);
+            double x = functionX(t);
+            double y = functionY(t);
 
             // Hier moeten de coordinaten op het scherm passen, dat werkt nog niet
-            double screenX = x * 16 + 100;
+            double screenX = x * 16 + 1000;
             // -9 want y werkt van boven naar beneden en dat willen we niet
-            double screenY = y * -9 + 100;
+            double screenY = y * -9 + 1000;
 
             // maak lijntje
-            if (x == startX) {
+            if (t == startT) {
                 path.getElements().add(new MoveTo(screenX, screenY));
             } else {
                 path.getElements().add(new LineTo(screenX, screenY));
@@ -45,8 +46,12 @@ public class HelloApplication extends Application {
         primaryStage.show();
     }
 
-    public double function(double x) {
-        return x*x;
+    public double functionX(double t) {
+        return Math.cos(t);
+    }
+
+    public double functionY(double t) {
+        return Math.sin(t);
     }
 
     public static void main(String[] args) {
