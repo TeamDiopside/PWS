@@ -1,9 +1,17 @@
 package nl.teamdiopside.pws;
 
+import javafx.scene.transform.MatrixType;
+import org.apache.commons.math3.linear.MatrixUtils;
+import org.apache.commons.math3.linear.RealMatrix;
+
 public class Network {
 
     public static void main(String[] args) {
-
+        double[][] data = { {1}, {2} };
+        double[][] data2 = { {3, 4} };
+        RealMatrix matrix = MatrixUtils.createRealMatrix(data);
+        RealMatrix matrix2 = matrix.multiply(MatrixUtils.createRealMatrix(data2));
+        System.out.println(matrix2);
     }
 
 }
