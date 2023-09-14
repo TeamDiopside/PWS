@@ -1,6 +1,6 @@
 # 2023
 
-| Dag  |     Tijd      | Duur |        Opmerking         |
+| Dag  |    Tijden     | Duur |        Activiteit        |
 |:----:|:-------------:|:----:|:------------------------:|
 | 7/2  | 10:45 - 11:30 | 0:45 |     PWS-voorlichting     |
 | 16/2 | 20:00 - 21:15 | 1:15 |        PWS-avond         |
