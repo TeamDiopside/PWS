@@ -9,4 +9,4 @@
 | 22/3 | 12:15 - 12:30 | 0:15 |                   Gesprekje met De Kogel                    |
 | 9/5  | 14:30 - 16:00 | 1:30 |                         Werkmiddag                          |
 | 6/9  | 13:45 - 16:20 | 2:35 | Uitzoeken van werking neural network en grafieken in JavaFX |
-|18/9|9:45 - 10:30|0:45|Matrices theorie leren|
+| 18/9 | 9:45 - 10:30  | 0:45 |                   Matrices theorie leren                    |

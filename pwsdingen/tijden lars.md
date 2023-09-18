@@ -11,4 +11,4 @@
 | 6/9  | 13:45 - 16:20 | 2:35 | Beginnen aan een neural network |
 | 14/9 | 14:30 - 15:20 | 0:50 |            Research             |
 | 14/9 | 17:30 - 18:30 | 1:00 |    Aan neural network werken    |
-|18/9|9:30 - 10:30|1:00|Matrices theorie begrijpen|
+| 18/9 | 9:30 - 10:30  | 1:00 |   Matrices theorie begrijpen    |
