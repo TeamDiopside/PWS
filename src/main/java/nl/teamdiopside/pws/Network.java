@@ -1,25 +1,30 @@
 package nl.teamdiopside.pws;
 
+import org.ejml.simple.SimpleMatrix;
+
 public class Network {
 
     public static void main(String[] args) {
-        double[] weights = {0.1, 0.1, 0.1};
-        Neuron neuron = new Neuron(weights, -2);
-
-        double[] inputs = {0.1, 0.1, 0.1};
-
-        double output = neuron.feedForward(new double[]{neuron.feedForward(inputs), neuron.feedForward(inputs), neuron.feedForward(inputs)});
-        System.out.println(output);
+        doStuff();
     }
 
+    // simpel netwerk
+    // 2 inputs
+    // 3 outputs
+    public static void doStuff() {
+        double[][] weightsArray = { {0.1, 0.2, 0.3}, {0.4, 0.5, 0.6} };
+        double[] inputsArray = {0.4, 0.6};
+
+        SimpleMatrix weights = new SimpleMatrix(weightsArray);
+        SimpleMatrix inputs = new SimpleMatrix(inputsArray);
+        SimpleMatrix output = weights.mult(inputs);
+
+        System.out.println(output.get(0, 0));
+        System.out.println(output.get(1, 0));
+    }
+
+    public static double sigmoid(double f) {
+        return 1 / (1 + Math.exp((-f)));
+    }
 }
 
-/*
- * voor elke laag is er een matrix
- * een vierkante voor de weights
- *  - rijen: alle weights die naar 1 neuron gaan
- *  - kolommen: weights van alle neurons
- * keer een vector voor alle komende neurons
- * plus een vector voor de weight van elk komend neuron
- *
- */
