@@ -14,6 +14,7 @@
 | 18/9 | 09:30 - 10:30 | 1:00 |   Matrices theorie begrijpen    |
 | 18/9 | 17:50 - 18:45 | 0:55 |  EJML proberen te laten werken  |
 | 25/9 | 10:00 - 15:15 | 5:15 |           PWS Werkdag           |
-| 25/9 | 18:30 - 19:50 | 1:20 |                                 |
+| 25/9 | 18:30 - 19:50 | 1:20 |   Pygame aan de praat krijgen   |
+| 25/9 |   21:00 -     |      |                                 |
 
 Totaal: 13:40

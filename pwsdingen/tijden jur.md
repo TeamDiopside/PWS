@@ -12,5 +12,6 @@
 | 18/9 | 09:45 - 10:30 | 0:45 |                   Matrices theorie leren                    |
 | 24/9 | 21:00 - 22:15 | 1:15 |  EJML jars samenvoegen voor valse hoop dat het zou werken   |
 | 25/9 | 10:00 - 15:15 | 5:15 |                         PWS Werkdag                         |
+| 25/9 | 21:45 - 22:10 | 0:25 |              Kijken naar Lars zijn "autootje"               |
 
-Totaal: 10:15
+Totaal: 10:40
