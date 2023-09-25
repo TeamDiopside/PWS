@@ -7,13 +7,14 @@ def main():
     pygame.init()
 
     screen = pygame.display.set_mode((1600, 900), pygame.RESIZABLE)
+    clock = pygame.time.Clock()
 
     pygame.display.set_caption("PWS")
 
     running = True
-    t = 0
+    frame = 0
 
-    car = Car(0, 0, 0.4, 1)
+    car = Car(1200, 400, math.pi * -0.5, 0)
 
     while running:
         for event in pygame.event.get():
@@ -24,12 +25,11 @@ def main():
         car.move()
 
         screen.fill((80, 80, 80))
-
         car.draw(screen)
 
-        t += 1
+        frame += 1
         pygame.display.update()
-        pygame.time.Clock().tick(60)
+        clock.tick(60)
 
 
 class Car:
@@ -39,15 +39,38 @@ class Car:
         self.angle: float = angle
         self.speed: float = speed
 
+    def rotate(self, angle):
+        self.angle += angle
+
     def move(self):
+        self.speed *= 0.95
+
+        sensitivity = 0.1
+        acceleration = 0.5
+
+        active_keys = pygame.key.get_pressed()
+        if active_keys[pygame.K_LEFT]:
+            self.angle -= sensitivity
+        if active_keys[pygame.K_RIGHT]:
+            self.angle += sensitivity
+        if active_keys[pygame.K_UP]:
+            self.speed += acceleration
+        if active_keys[pygame.K_DOWN]:
+            self.speed -= acceleration
+
         self.x += math.cos(self.angle) * self.speed
         self.y += math.sin(self.angle) * self.speed
 
     def draw(self, surface: pygame.surface.Surface):
-        surface.fill((40, 40, 40), pygame.rect.Rect((self.x - 10, self.y - 10), (self.x + 10, self.y + 10)))
+        rect = pygame.rect.Rect((self.x, self.y), (50, 50))
+        color = (40, 40, 40)
+        surface.fill(color, rect)
+
+        look_rect = pygame.rect.Rect((self.x + math.cos(self.angle) * 50 + 20, self.y + math.sin(self.angle) * 50 + 20), (10, 10))
+        surface.fill(color, look_rect)
 
     def __str__(self):
-        return f"Car at ({self.x}, {self.y})"
+        return f"Car at ({round(self.x)}, {round(self.y)})"
 
 
 if __name__ == '__main__':
