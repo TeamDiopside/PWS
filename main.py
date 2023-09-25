@@ -1,51 +1,47 @@
+import math
 import random
 
 import numpy as np
 
 
 def main():
-    layers = [2, 3]
+    layers = [2, 3, 4, 1]
 
-    all_weights = [None] * (len(layers) - 1)
+    all_weights = [0] * (len(layers) - 1)
 
     # maken van weights matrices, nu nog compleet random vulling
     for x in range(len(all_weights)):
-        weights = [[None] * layers[x]] * layers[x + 1]
-        weights = make_weights(weights)
+        weights = create_random_matrix(layers[x + 1], layers[x])
         all_weights[x] = weights
 
     # uitrekenen van layers achter elkaar
-    inputs = [0.3, 0.7]
-    for w in all_weights:
-        inputs = np.matmul(w, inputs)
-    # print(inputs)
+    inputs = [0.3, 0.2]
+    print(inputs)
+    for weight in all_weights:
+        inputs = np.matmul(weight, inputs)
+        for x in range(len(inputs)):
+            inputs[x] = sigmoid(inputs[x])
+        print(inputs)
+    print(inputs[0] - 0.5)
 
 
-# matrix vullen met random
-def make_weights(matrix):
+def create_random_matrix(height, width):
+    matrix = []
+    for x in range(height):
+        lijst = []
+        for y in range(width):
+            lijst.append(random.random())
+        matrix.append(lijst)
 
-    x_length = len(matrix)
-    y_length = len(matrix[0])
-
-    print(x_length, y_length)
-
-    for x in range(x_length):
-        for y in range(y_length):
-            matrix[x][y] = random.random()
-            print(f"{x}, {y}: {matrix[x][y]}")
-            # print(array)
-    print(matrix)
     return matrix
 
 
+def sigmoid(x):
+    return 1 / (1 + math.exp(-x))
+
+
 def test():
-    a = [[1, 2, 3], [4, 5, 6]]
-
-    for x in range(2):
-        for y in range(3):
-            a[x][y] = random.random()
-
-    print(a)
+    pass
 
 
 if __name__ == '__main__':
