@@ -14,7 +14,7 @@ def main():
     running = True
     frame = 0
 
-    car = Car(1200, 400, math.pi * -0.5, 0)
+    car = Car(800, 450, math.pi * -0.5, 0)
 
     while running:
         for event in pygame.event.get():
@@ -24,7 +24,7 @@ def main():
 
         car.move()
 
-        screen.fill((80, 80, 80))
+        screen.fill((100, 100, 100))
         car.draw(screen)
 
         frame += 1
@@ -38,6 +38,7 @@ class Car:
         self.y: float = y
         self.angle: float = angle
         self.speed: float = speed
+        self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = angle
 
     def rotate(self, angle):
@@ -46,34 +47,39 @@ class Car:
     def move(self):
         self.speed *= 0.95
 
-        sensitivity = 0.1
-        acceleration = 1
+        sensitivity = 0.06
+        acceleration = 0.7
 
         active_keys = pygame.key.get_pressed()
-        if active_keys[pygame.K_LEFT]:
-            self.angle -= sensitivity
-        if active_keys[pygame.K_RIGHT]:
+        if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
             self.angle += sensitivity
-        if active_keys[pygame.K_UP]:
+        if active_keys[pygame.K_RIGHT] or active_keys[pygame.K_d]:
+            self.angle -= sensitivity
+        if active_keys[pygame.K_UP] or active_keys[pygame.K_w]:
             self.speed += acceleration
-        if active_keys[pygame.K_DOWN]:
+        if active_keys[pygame.K_DOWN] or active_keys[pygame.K_s]:
             self.speed -= acceleration
+        if active_keys[pygame.K_SPACE]:
+            self.speed += 3
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.05
 
-        self.x += math.cos(self.movement_angle) * self.speed
-        self.y += math.sin(self.movement_angle) * self.speed
+        self.x += -math.sin(self.movement_angle) * self.speed
+        self.y += -math.cos(self.movement_angle) * self.speed
 
     def draw(self, surface: pygame.surface.Surface):
-        rect = pygame.rect.Rect((self.x, self.y), (50, 50))
-        color = (40, 40, 40)
-        surface.fill(color, rect)
-
-        look_rect = pygame.rect.Rect((self.x + math.cos(self.angle) * 50 + 20, self.y + math.sin(self.angle) * 50 + 20), (10, 10))
-        surface.fill((180, 80, 80), look_rect)
+        surface.blit(rotate_center(self.image, self.angle), (self.x, self.y), pygame.rect.Rect((0, 0), (1600, 900)))
 
     def __str__(self):
         return f"Car at ({round(self.x)}, {round(self.y)})"
+
+
+def rotate_center(image, angle):
+    rot_image = pygame.transform.rotate(image, math.degrees(angle))
+    rot_rect = image.get_rect().copy()
+    rot_rect.center = rot_image.get_rect().center
+    rot_image = rot_image.subsurface(rot_rect).copy()
+    return rot_image
 
 
 if __name__ == '__main__':
