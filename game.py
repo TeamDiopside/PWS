@@ -52,14 +52,18 @@ class Car:
         self.speed *= 0.95
 
         resistance = 7
-        sensitivity = 0.2
+        sensitivity = 0.13
         acceleration = 0.9
+        max_rotation = 0.04
+        rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
+
+        print(rotation)
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
-            self.angle += sensitivity * self.speed / numpy.fmax(abs(self.speed / sensitivity), resistance)
+            self.angle += rotation
         if active_keys[pygame.K_RIGHT] or active_keys[pygame.K_d]:
-            self.angle -= sensitivity * self.speed / numpy.fmax(abs(self.speed / sensitivity), resistance)
+            self.angle -= rotation
         if active_keys[pygame.K_UP] or active_keys[pygame.K_w]:
             self.speed += acceleration
         if active_keys[pygame.K_DOWN] or active_keys[pygame.K_s]:
@@ -74,7 +78,7 @@ class Car:
 
     # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
     def draw(self, surface: pygame.surface.Surface):
-        surface.blit(rotate_center(self.image, self.angle), (self.x, self.y), surface.get_rect())
+        surface.blit(rotate_center(self.image, self.movement_angle), (self.x, self.y), surface.get_rect())
 
     def __str__(self):
         return f"Car at ({round(self.x)}, {round(self.y)})"
