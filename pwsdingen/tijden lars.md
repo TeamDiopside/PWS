@@ -20,4 +20,4 @@
 | 26/9 | 14:15 - 14:30 | 0:15 |      De Kogel het autootje laten zien       |
 | 26/9 | 16:30 - 19:00 | 2:30 |               Rotation fixen                |
 
-Totaal: 18:45
+Totaal: 23:45

@@ -15,5 +15,6 @@
 | 25/9 | 21:45 - 22:10 | 0:25 |              Kijken naar Lars zijn "autootje"               |
 | 26/9 | 10:30 - 10:45 | 0:15 |            De Kogel vertellen over het autootje             |
 | 26/9 | 14:15 - 14:30 | 0:15 |              De Kogel het autootje laten zien               |
+| 26/9 | 15:45 - 19:40 | 3:55 |           Rotation fixen en totale tijd narekenen           |
 
-Totaal: 11:10
+Totaal: 20:05
