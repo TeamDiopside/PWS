@@ -4,7 +4,7 @@ import random
 import numpy
 
 
-def main():
+def main(inputs):
     # alle hidden layers op volgorde, eerste is input, laatste is output, getallen = aantal nodes in layer
     layers = [2, 3, 4, 1]
 
@@ -17,13 +17,12 @@ def main():
         all_weights[x] = weights
 
     # uitrekenen van layers achter elkaar
-    inputs = [0.3, 0.2]
     for weight in all_weights:
         inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
         for x in range(len(inputs)):
             inputs[x] = sigmoid(inputs[x])  # alles door de sigmoid functie halen
 
-    return inputs[0]
+    return inputs
 
 
 def create_random_matrix(height, width):
