@@ -15,3 +15,4 @@
 | 25/9 | 21:45 - 22:10 | 0:25 |              Kijken naar Lars zijn "autootje"               |
 
 Totaal: 10:40
+10:30-10:45 praat praat
