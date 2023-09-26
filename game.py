@@ -53,11 +53,10 @@ class Car:
 
         resistance = 7
         sensitivity = 0.13
-        acceleration = 0.9
         max_rotation = 0.04
         rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
 
-        print(rotation)
+        acceleration = 0.9
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
