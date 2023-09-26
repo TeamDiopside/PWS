@@ -1,5 +1,6 @@
 import math
 
+import numpy
 import pygame
 
 
@@ -31,7 +32,6 @@ def main():
 
         frame += 1
         pygame.display.update()
-        print(car.speed)
         clock.tick(60)
 
 
@@ -47,18 +47,19 @@ class Car:
     def rotate(self, angle):
         self.angle += angle
 
-    # move gebeurd 60 keer per seconde, past waarden van de auto aan
+    # move gebeurt 60 keer per seconde, past waarden van de auto aan
     def move(self):
         self.speed *= 0.95
 
-        sensitivity = 0.06
-        acceleration = 0.7
+        resistance = 7
+        sensitivity = 0.2
+        acceleration = 0.9
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
-            self.angle += sensitivity * self.speed
+            self.angle += sensitivity * self.speed / numpy.fmax(abs(self.speed / sensitivity), resistance)
         if active_keys[pygame.K_RIGHT] or active_keys[pygame.K_d]:
-            self.angle -= sensitivity * self.speed
+            self.angle -= sensitivity * self.speed / numpy.fmax(abs(self.speed / sensitivity), resistance)
         if active_keys[pygame.K_UP] or active_keys[pygame.K_w]:
             self.speed += acceleration
         if active_keys[pygame.K_DOWN] or active_keys[pygame.K_s]:
@@ -71,9 +72,9 @@ class Car:
         self.x += -math.sin(self.movement_angle) * self.speed
         self.y += -math.cos(self.movement_angle) * self.speed
 
-    # draw gebeurd ook 60 keer per seconde, past veranderingen van move toe op het scherm
+    # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
     def draw(self, surface: pygame.surface.Surface):
-        surface.blit(rotate_center(self.image, self.angle), (self.x, self.y), pygame.rect.Rect((0, 0), (1600, 900)))
+        surface.blit(rotate_center(self.image, self.angle), (self.x, self.y), surface.get_rect())
 
     def __str__(self):
         return f"Car at ({round(self.x)}, {round(self.y)})"
