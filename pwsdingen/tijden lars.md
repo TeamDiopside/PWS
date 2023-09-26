@@ -18,5 +18,6 @@
 | 25/9 | 21:00 - 23:05 | 2:05 | De auto maken en "realistisch" laten rijden |
 | 26/9 | 10:30 - 10:45 | 0:15 |    De Kogel vertellen over het autootje     |
 | 26/9 | 14:15 - 14:30 | 0:15 |      De Kogel het autootje laten zien       |
+| 26/9 | 16:30 - 19:00 | 2:30 |               Rotation fixen                |
 
-Totaal: 16:15
+Totaal: 18:45
