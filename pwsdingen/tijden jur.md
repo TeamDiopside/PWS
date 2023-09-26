@@ -13,6 +13,7 @@
 | 24/9 | 21:00 - 22:15 | 1:15 |  EJML jars samenvoegen voor valse hoop dat het zou werken   |
 | 25/9 | 10:00 - 15:15 | 5:15 |                         PWS Werkdag                         |
 | 25/9 | 21:45 - 22:10 | 0:25 |              Kijken naar Lars zijn "autootje"               |
+| 26/9 | 10:30 - 10:45 | 0:15 |            De Kogel vertellen over het autootje             |
+| 26/9 | 14:15 - 14:30 | 0:15 |              De Kogel het autootje laten zien               |
 
-Totaal: 10:40
-10:30-10:45 praat praat
+Totaal: 11:10

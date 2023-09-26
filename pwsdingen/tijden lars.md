@@ -16,5 +16,7 @@
 | 25/9 | 10:00 - 15:15 | 5:15 |                 PWS Werkdag                 |
 | 25/9 | 18:30 - 19:50 | 1:20 |         Pygame aan de praat krijgen         |
 | 25/9 | 21:00 - 23:05 | 2:05 | De auto maken en "realistisch" laten rijden |
+| 26/9 | 10:30 - 10:45 | 0:15 |    De Kogel vertellen over het autootje     |
+| 26/9 | 14:15 - 14:30 | 0:15 |      De Kogel het autootje laten zien       |
 
-Totaal: 15:45
+Totaal: 16:15
