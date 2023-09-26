@@ -18,13 +18,12 @@ def main():
 
     # uitrekenen van layers achter elkaar
     inputs = [0.3, 0.2]
-    print(inputs)
     for weight in all_weights:
         inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
         for x in range(len(inputs)):
             inputs[x] = sigmoid(inputs[x])  # alles door de sigmoid functie halen
-        print(inputs)
-    print(inputs[0])
+
+    return inputs[0]
 
 
 def create_random_matrix(height, width):
