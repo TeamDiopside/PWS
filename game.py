@@ -24,7 +24,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        car.move()
+        car.move(screen)
 
         # maak scherm grijs
         screen.fill((100, 100, 100))
@@ -48,15 +48,14 @@ class Car:
         self.angle += angle
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
-    def move(self):
-        self.speed *= 0.95
+    def move(self, screen):
+        self.speed *= 0.97
+        acceleration = 0.5
 
-        resistance = 7
-        sensitivity = 0.13
-        max_rotation = 0.04
+        resistance = acceleration * 7.77
+        sensitivity = acceleration * 0.14
+        max_rotation = acceleration * 0.04
         rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
-
-        acceleration = 0.9
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
@@ -70,25 +69,44 @@ class Car:
         if active_keys[pygame.K_SPACE]:
             self.speed += 3
 
-        self.movement_angle += (self.angle - self.movement_angle) * 0.05
+        self.movement_angle += (self.angle - self.movement_angle) * 0.1
 
         self.x += -math.sin(self.movement_angle) * self.speed
         self.y += -math.cos(self.movement_angle) * self.speed
 
+        screen_right = screen.get_rect().width - 50
+        screen_down = screen.get_rect().height - 50
+
+        if self.x < -50 or self.x > screen_right or self.y < -50 or self.y > screen_down:
+            self.speed = 0
+
+        self.x = numpy.fmax(self.x, -50)
+        self.y = numpy.fmax(self.y, -50)
+        self.x = numpy.fmin(self.x, screen_right)
+        self.y = numpy.fmin(self.y, screen_down)
+
     # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
     def draw(self, surface: pygame.surface.Surface):
-        surface.blit(rotate_center(self.image, self.movement_angle), (self.x, self.y), surface.get_rect())
+        image, rect = rotate_center(self.image, math.degrees(self.movement_angle), self.image.get_rect().center, pygame.math.Vector2(self.x, self.y))
+        surface.blit(image, rect)
 
     def __str__(self):
         return f"Car at ({round(self.x)}, {round(self.y)})"
 
 
-def rotate_center(image, angle):
-    rot_image = pygame.transform.rotate(image, math.degrees(angle))
-    rot_rect = image.get_rect().copy()
-    rot_rect.center = rot_image.get_rect().center
-    rot_image = rot_image.subsurface(rot_rect).copy()
-    return rot_image
+def rotate_center(surface, angle, pivot, offset):
+    """Rotate the surface around the pivot point.
+
+    Args:
+        surface (pygame.Surface): The surface that is to be rotated.
+        angle (float): Rotate by this angle.
+        pivot (tuple, list, pygame.math.Vector2): The pivot point.
+        offset (pygame.math.Vector2): This vector is added to the pivot.
+    """
+    rotated_image = pygame.transform.rotozoom(surface, angle, 1)  # Rotate the image.
+    # Add the offset vector to the center/pivot point to shift the rect.
+    rect = rotated_image.get_rect(center=pivot+offset)
+    return rotated_image, rect  # Return the rotated image and shifted rect.
 
 
 if __name__ == '__main__':
