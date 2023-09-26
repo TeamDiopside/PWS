@@ -14,6 +14,7 @@ def main():
     running = True
     frame = 0
 
+    # Maak stilstaande auto op x coordinaat 800, y coordinaat 450, 90 graden naar links gedraaid
     car = Car(800, 450, math.pi * -0.5, 0)
 
     while running:
@@ -24,11 +25,13 @@ def main():
 
         car.move()
 
+        # maak scherm grijs
         screen.fill((100, 100, 100))
         car.draw(screen)
 
         frame += 1
         pygame.display.update()
+        print(car.speed)
         clock.tick(60)
 
 
@@ -44,6 +47,7 @@ class Car:
     def rotate(self, angle):
         self.angle += angle
 
+    # move gebeurd 60 keer per seconde, past waarden van de auto aan
     def move(self):
         self.speed *= 0.95
 
@@ -52,9 +56,9 @@ class Car:
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
-            self.angle += sensitivity
+            self.angle += sensitivity * self.speed
         if active_keys[pygame.K_RIGHT] or active_keys[pygame.K_d]:
-            self.angle -= sensitivity
+            self.angle -= sensitivity * self.speed
         if active_keys[pygame.K_UP] or active_keys[pygame.K_w]:
             self.speed += acceleration
         if active_keys[pygame.K_DOWN] or active_keys[pygame.K_s]:
@@ -67,6 +71,7 @@ class Car:
         self.x += -math.sin(self.movement_angle) * self.speed
         self.y += -math.cos(self.movement_angle) * self.speed
 
+    # draw gebeurd ook 60 keer per seconde, past veranderingen van move toe op het scherm
     def draw(self, surface: pygame.surface.Surface):
         surface.blit(rotate_center(self.image, self.angle), (self.x, self.y), pygame.rect.Rect((0, 0), (1600, 900)))
 
