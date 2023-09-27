@@ -18,3 +18,4 @@
 | 26/9 | 15:45 - 19:40 | 3:55 |           Rotation fixen en totale tijd narekenen           |
 
 Totaal: 20:05
+10:30-10:45 weer praat praat
