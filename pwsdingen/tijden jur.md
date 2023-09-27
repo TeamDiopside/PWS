@@ -16,6 +16,6 @@
 | 26/9 | 10:30 - 10:45 | 0:15 |            De Kogel vertellen over het autootje             |
 | 26/9 | 14:15 - 14:30 | 0:15 |              De Kogel het autootje laten zien               |
 | 26/9 | 15:45 - 19:40 | 3:55 |           Rotation fixen en totale tijd narekenen           |
+| 27/9 | 10:30 - 10:45 | 0:15 |       Nieuwe stuur mechaniek laten zien aan De Kogel        |
 
-Totaal: 20:05
-10:30-10:45 weer praat praat
+Totaal: 20:20
