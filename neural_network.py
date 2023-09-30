@@ -7,7 +7,7 @@ import numpy
 
 def main(inputs):
     # alle hidden layers op volgorde, eerste is input, laatste is output, getallen = aantal nodes in layer
-    layers = [2, 3, 4, 2]
+    layers = [2, 2]
 
     # lijst voor alle weight matrices
     all_weights: list = [0] * (len(layers) - 1)
@@ -24,7 +24,6 @@ def main(inputs):
         inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
         for x in range(len(inputs)):
             inputs[x] = sigmoid(inputs[x])  # alles door de sigmoid functie halen
-            inputs[x] -= 0.5
 
     # output_weights_to_file(all_weights, "data/test.json")
 
