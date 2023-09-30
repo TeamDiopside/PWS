@@ -20,5 +20,7 @@
 | 26/9 | 14:15 - 14:30 | 0:15 |        De Kogel het autootje laten zien        |
 | 26/9 | 16:30 - 19:00 | 2:30 |                 Rotation fixen                 |
 | 27/9 | 10:30 - 10:45 | 0:15 | Nieuwe stuur mechaniek laten zien aan De Kogel |
+| 28/9 | 12:45 - 13:30 | 0:45 |  Nadenken over generaties en machine learning  |
+| 30/9 | 15:30 - 17:00 | 1:30 |  JSON laten werken, de AI "zelf" laten rijden  |
 
-Totaal: 24:00
+Totaal: 26:15

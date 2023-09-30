@@ -1,4 +1,5 @@
 import math
+import random
 
 import numpy
 import pygame
@@ -9,7 +10,8 @@ import neural_network
 def main():
     pygame.init()
 
-    screen = pygame.display.set_mode((1600, 900), pygame.RESIZABLE)
+    info = pygame.display.Info()
+    screen = pygame.display.set_mode((info.current_w * 0.75, info.current_h * 0.75), pygame.RESIZABLE)
     clock = pygame.time.Clock()
 
     pygame.display.set_caption("PWS")
@@ -52,14 +54,21 @@ class Car:
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
     def move(self, screen):
         self.speed *= 0.97
-        acceleration = 0.5
+        acceleration = 0.6
 
         resistance = acceleration * 7.77
         sensitivity = acceleration * 0.14
         max_rotation = acceleration * 0.04
         rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
 
-        network = neural_network.main([0.3, 0.2])
+        network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1])
+        steering = network[0] * 2 - 1
+        gas = network[1] * 2 - 1
+
+        print(network)
+
+        self.angle += rotation * steering
+        self.speed += acceleration * gas
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
@@ -71,7 +80,8 @@ class Car:
         if active_keys[pygame.K_DOWN] or active_keys[pygame.K_s]:
             self.speed -= acceleration
         if active_keys[pygame.K_SPACE]:
-            self.speed += 3
+            self.x = screen.get_rect().width * 0.5
+            self.y = screen.get_rect().height * 0.5
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1
 
@@ -98,6 +108,7 @@ class Car:
         return f"Car at ({round(self.x)}, {round(self.y)})"
 
 
+# snippet van iemand anders
 def rotate_center(surface, angle, pivot, offset):
     """Rotate the surface around the pivot point.
 
