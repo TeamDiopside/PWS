@@ -18,5 +18,6 @@
 | 26/9 | 15:45 - 19:40 | 3:55 |           Rotation fixen en totale tijd narekenen           |
 | 27/9 | 10:30 - 10:45 | 0:15 |       Nieuwe stuur mechaniek laten zien aan De Kogel        |
 | 28/9 | 12:45 - 13:30 | 0:45 |        Nadenken over generaties en machine learning         |
+| 3/10 | 19:00 - 19:25 | 0:25 |    De progressie van het weekend in het document zetten     |
 
-Totaal: 21:05
+Totaal: 21:30
