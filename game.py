@@ -1,10 +1,7 @@
 import math
-import random
 
 import numpy
 import pygame
-
-import neural_network
 
 
 def main():
@@ -31,7 +28,8 @@ def main():
         car.move(screen)
 
         # maak scherm grijs
-        screen.fill((100, 100, 100))
+        screen.fill((100, 100, 110))
+        draw_map(screen, car.x, car.y)
         car.draw(screen)
 
         frame += 1
@@ -43,6 +41,8 @@ class Car:
     def __init__(self, x, y, angle, speed):
         self.x: float = x
         self.y: float = y
+        self.dx: float = 0
+        self.dy: float = 0
         self.angle: float = angle
         self.speed: float = speed
         self.image = pygame.image.load("assets/red_car.png")
@@ -61,14 +61,13 @@ class Car:
         max_rotation = acceleration * 0.04
         rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
 
-        network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1])
-        steering = network[0] * 2 - 1
-        gas = network[1] * 2 - 1
+        # network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1])
+        # steering = network[0] * 2 - 1
+        # gas = network[1] * 2 - 1
+        # print(network)
 
-        print(network)
-
-        self.angle += rotation * steering
-        self.speed += acceleration * gas
+        # self.angle += rotation * steering
+        # self.speed += acceleration * gas
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
@@ -85,23 +84,16 @@ class Car:
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1
 
-        self.x += -math.sin(self.movement_angle) * self.speed
-        self.y += -math.cos(self.movement_angle) * self.speed
+        self.dx = -math.sin(self.movement_angle) * self.speed
+        self.dy = -math.cos(self.movement_angle) * self.speed
 
-        screen_right = screen.get_rect().width - 50
-        screen_down = screen.get_rect().height - 50
-
-        if self.x < -50 or self.x > screen_right or self.y < -50 or self.y > screen_down:
-            self.speed = 0
-
-        self.x = numpy.fmax(self.x, -50)
-        self.y = numpy.fmax(self.y, -50)
-        self.x = numpy.fmin(self.x, screen_right)
-        self.y = numpy.fmin(self.y, screen_down)
+        self.x += self.dx
+        self.y += self.dy
 
     # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
     def draw(self, surface: pygame.surface.Surface):
-        image, rect = rotate_center(self.image, math.degrees(self.movement_angle), self.image.get_rect().center, pygame.math.Vector2(self.x, self.y))
+        image, rect = rotate_center(self.image, math.degrees(self.movement_angle), self.image.get_rect().center,
+                                    pygame.math.Vector2(surface.get_rect().width * 0.5, surface.get_rect().height * 0.5))
         surface.blit(image, rect)
 
     def __str__(self):
@@ -120,8 +112,40 @@ def rotate_center(surface, angle, pivot, offset):
     """
     rotated_image = pygame.transform.rotozoom(surface, angle, 1)  # Rotate the image.
     # Add the offset vector to the center/pivot point to shift the rect.
-    rect = rotated_image.get_rect(center=pivot+offset)
+    rect = rotated_image.get_rect(center=pivot + offset)
     return rotated_image, rect  # Return the rotated image and shifted rect.
+
+
+def draw_map(screen, cam_x, cam_y):
+    # baan is een lijst van stukjes weg
+    # s = straight
+    # l = links
+    # r = rechts
+
+    built_in_map = ["s", "s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s"]
+
+    x, y = 100 - cam_x + screen.get_rect().width * 0.5, 100 - cam_y + screen.get_rect().height * 0.5
+    angle = 0
+    size = 300
+
+    for tile in built_in_map:
+        screen.fill((30, 30, 40), pygame.rect.Rect(x, y, size, size))
+
+        if tile == "r":
+            angle += 1
+        elif tile == "l":
+            angle -= 1
+
+        real_angle = angle % 4
+
+        if real_angle == 0:
+            x += size
+        elif real_angle == 1:
+            y += size
+        elif real_angle == 2:
+            x -= size
+        elif real_angle == 3:
+            y -= size
 
 
 if __name__ == '__main__':

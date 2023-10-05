@@ -22,5 +22,6 @@
 | 27/9 | 10:30 - 10:45 | 0:15 | Nieuwe stuur mechaniek laten zien aan De Kogel |
 | 28/9 | 12:45 - 13:30 | 0:45 |  Nadenken over generaties en machine learning  |
 | 30/9 | 15:30 - 17:15 | 1:45 |  JSON laten werken, de AI "zelf" laten rijden  |
+| 5/10 | 18:15 - 19:15 | 1:00 |     De camera vastzetten en een weg maken      |
 
-Totaal: 26:30
+Totaal: 27:30
