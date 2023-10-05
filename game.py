@@ -92,8 +92,8 @@ class Car:
 
     # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
     def draw(self, surface: pygame.surface.Surface):
-        image, rect = rotate_center(self.image, math.degrees(self.movement_angle), self.image.get_rect().center,
-                                    pygame.math.Vector2(surface.get_rect().width * 0.5, surface.get_rect().height * 0.5))
+        image, rect = rotate_image(self.image, math.degrees(self.movement_angle), self.image.get_rect().center,
+                                   pygame.math.Vector2(surface.get_rect().width * 0.5, surface.get_rect().height * 0.5))
         surface.blit(image, rect)
 
     def __str__(self):
@@ -101,7 +101,7 @@ class Car:
 
 
 # snippet van iemand anders
-def rotate_center(surface, angle, pivot, offset):
+def rotate_image(surface, angle, pivot, offset):
     """Rotate the surface around the pivot point.
 
     Args:
@@ -122,19 +122,30 @@ def draw_map(screen, cam_x, cam_y):
     # l = links
     # r = rechts
 
-    built_in_map = ["s", "s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s"]
+    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
 
-    x, y = 100 - cam_x + screen.get_rect().width * 0.5, 100 - cam_y + screen.get_rect().height * 0.5
+    x: int = 100 - cam_x + screen.get_rect().width * 0.5
+    y: int = 100 - cam_y + screen.get_rect().height * 0.5
     angle = 0
-    size = 300
+    size = 200
+
+    straight_road = pygame.image.load("assets/road_straight.png")
+    turn_road = pygame.image.load("assets/road_turn.png")
 
     for tile in built_in_map:
-        screen.fill((30, 30, 40), pygame.rect.Rect(x, y, size, size))
+        # screen.fill((30, 30, 40), pygame.rect.Rect(x, y, size, size))
 
         if tile == "r":
             angle += 1
+            image, rect = rotate_image(turn_road, angle * -90 + 180, turn_road.get_rect().center, pygame.Vector2(x, y))
+            screen.blit(image, rect)
         elif tile == "l":
             angle -= 1
+            image, rect = rotate_image(turn_road, angle * -90 - 90, turn_road.get_rect().center, pygame.Vector2(x, y))
+            screen.blit(image, rect)
+        elif tile == "s":
+            image, rect = rotate_image(straight_road, angle * 90, straight_road.get_rect().center, pygame.Vector2(x, y))
+            screen.blit(image, rect)
 
         real_angle = angle % 4
 
