@@ -1,7 +1,10 @@
 import math
+import random
 
 import numpy
 import pygame
+
+import neural_network
 
 
 def main():
@@ -14,7 +17,7 @@ def main():
     pygame.display.set_caption("PWS")
 
     running = True
-    frame = 0
+    frame = 1
 
     # Maak stilstaande auto op x coordinaat 800, y coordinaat 450, 90 graden naar links gedraaid
     car = Car(800, 450, math.pi * -0.5, 0)
@@ -25,7 +28,7 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-        car.move(screen)
+        car.move(screen, frame)
 
         # maak scherm grijs
         screen.fill((100, 100, 110))
@@ -52,7 +55,7 @@ class Car:
         self.angle += angle
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
-    def move(self, screen):
+    def move(self, screen, cycle):
         self.speed *= 0.97
         acceleration = 0.6
 
@@ -61,13 +64,13 @@ class Car:
         max_rotation = acceleration * 0.04
         rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
 
-        # network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1])
-        # steering = network[0] * 2 - 1
-        # gas = network[1] * 2 - 1
-        # print(network)
+        network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1], cycle)
+        steering = network[0] * 2 - 1
+        gas = network[1] * 2 - 1
+        print(network)
 
-        # self.angle += rotation * steering
-        # self.speed += acceleration * gas
+        self.angle += rotation * steering
+        self.speed += acceleration * gas
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:

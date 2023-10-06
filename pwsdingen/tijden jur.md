@@ -19,5 +19,6 @@
 | 27/9 | 10:30 - 10:45 | 0:15 |       Nieuwe stuur mechaniek laten zien aan De Kogel        |
 | 28/9 | 12:45 - 13:30 | 0:45 |        Nadenken over generaties en machine learning         |
 | 3/10 | 19:00 - 19:25 | 0:25 |    De progressie van het weekend in het document zetten     |
+| 6/10 | 11:30 - 12:45 | 1:15 |                  Weight verandering maken                   |
 
-Totaal: 21:30
+Totaal: 22:45
