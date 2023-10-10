@@ -135,20 +135,30 @@ def draw_map(screen, cam_x, cam_y):
     straight_road = pygame.image.load("assets/road_straight.png")
     turn_road = pygame.image.load("assets/road_turn.png")
 
+    # Pre-rotate de weg
+    rotated_straight_roads = {
+        0: straight_road,
+        1: pygame.transform.rotate(straight_road, 90)
+    }
+
+    rotated_turn_roads = {
+        0: turn_road,
+        1: pygame.transform.rotate(turn_road, 90),
+        2: pygame.transform.rotate(turn_road, 180),
+        3: pygame.transform.rotate(turn_road, 270)
+    }
+
     for tile in built_in_map:
         # screen.fill((30, 30, 40), pygame.rect.Rect(x, y, size, size))
 
         if tile == "r":
             angle += 1
-            image, rect = rotate_image(turn_road, angle * -90 + 180, turn_road.get_rect().center, pygame.Vector2(x, y))
-            screen.blit(image, rect)
+            screen.blit(rotated_turn_roads[(angle * -1 + 6) % 4], rotated_turn_roads[(angle * -1 + 6) % 4].get_rect(center=(x, y)))
         elif tile == "l":
             angle -= 1
-            image, rect = rotate_image(turn_road, angle * -90 - 90, turn_road.get_rect().center, pygame.Vector2(x, y))
-            screen.blit(image, rect)
+            screen.blit(rotated_turn_roads[(angle * -1 + 3) % 4], rotated_turn_roads[(angle * -1 + 3) % 4].get_rect(center=(x, y)))
         elif tile == "s":
-            image, rect = rotate_image(straight_road, angle * 90, straight_road.get_rect().center, pygame.Vector2(x, y))
-            screen.blit(image, rect)
+            screen.blit(rotated_straight_roads[angle % 2], rotated_straight_roads[angle % 2].get_rect(center=(x, y)))
 
         real_angle = angle % 4
 
