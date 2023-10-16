@@ -13,7 +13,7 @@
   - Info over generatie bewaren in files
   - Functie voor "fine-tuning" naar mate van tijd
 - Beeld
-  - Info op het scherm kunnen laten zien
+  - ~~Info op het scherm kunnen laten zien~~
   - Interface om bepaalde weights te laden? 
 
 
