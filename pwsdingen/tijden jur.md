@@ -21,6 +21,6 @@
 | 3/10  | 19:00 - 19:25 | 0:25 |    De progressie van het weekend in het document zetten     |
 | 6/10  | 11:30 - 12:45 | 1:15 |                  Weight verandering maken                   |
 | 10/10 | 15:45 - 17:15 | 1:30 |                Het tekenen van de weg fixen                 |
-| 10/10 | 15:20 - 15:35 | 0:15 |                Progressiedocument bijwerken                 |
+| 16/10 | 15:20 - 15:35 | 0:15 |                Progressiedocument bijwerken                 |
 
 Totaal: 24:30
