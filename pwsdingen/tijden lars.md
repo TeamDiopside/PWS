@@ -25,9 +25,9 @@
 | 5/10  | 18:15 - 19:15 | 1:00 |     De camera vastzetten en een weg maken      |
 | 5/10  | 20:40 - 21:15 | 0:35 |           Textures voor de weg maken           |
 | 6/10  | 11:30 - 12:45 | 1:15 |            Weight verandering maken            |
-| 16/10 |    19:00 -    |      |                                                |
+| 16/10 | 19:00 - 19:20 | 0:20 |  Alles wat nog gedaan moet worden opschrijven  |
 
-Totaal: 29:20
+Totaal: 29:40
 
 
 ## Uren
