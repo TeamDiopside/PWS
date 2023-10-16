@@ -6,6 +6,8 @@ import pygame
 
 import neural_network
 
+debug_info: list[str] = []
+
 
 def main():
     pygame.init()
@@ -28,13 +30,17 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
+        debug_info.append(f"FPS: {int(clock.get_fps())}")
+
         car.move(screen, frame)
 
         # maak scherm grijs
         screen.fill((100, 100, 110))
         draw_map(screen, car.x, car.y)
         car.draw(screen)
+        draw_text(debug_info, screen)
 
+        clear_debug_info()
         frame += 1
         pygame.display.update()
         clock.tick(60)
@@ -55,7 +61,7 @@ class Car:
         self.angle += angle
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
-    def move(self, screen, cycle):
+    def move(self, screen, frame):
         self.speed *= 0.97
         acceleration = 0.6
 
@@ -64,13 +70,15 @@ class Car:
         max_rotation = acceleration * 0.04
         rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
 
-        network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1], cycle)
-        steering = network[0] * 2 - 1
-        gas = network[1] * 2 - 1
-        print(network)
+        ai_enabled = False
+        if ai_enabled:
+            network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1], frame)
+            steering = network[0] * 2 - 1
+            gas = network[1] * 2 - 1
+            print(network)
 
-        self.angle += rotation * steering
-        self.speed += acceleration * gas
+            self.angle += rotation * steering
+            self.speed += acceleration * gas
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT] or active_keys[pygame.K_a]:
@@ -92,6 +100,10 @@ class Car:
 
         self.x += self.dx
         self.y += self.dy
+
+        add_rounded_debug_info("Speed: ", self.speed)
+        add_rounded_debug_info("X: ", self.x)
+        add_rounded_debug_info("Y: ", self.y)
 
     # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
     def draw(self, surface: pygame.surface.Surface):
@@ -149,7 +161,6 @@ def draw_map(screen, cam_x, cam_y):
     }
 
     for tile in built_in_map:
-        # screen.fill((30, 30, 40), pygame.rect.Rect(x, y, size, size))
 
         if tile == "r":
             angle += 1
@@ -170,6 +181,25 @@ def draw_map(screen, cam_x, cam_y):
             x -= size
         elif real_angle == 3:
             y -= size
+
+
+def draw_text(text_list: list[str], screen: pygame.surface.Surface):
+    font_size = 20
+    font = pygame.font.Font("assets/JetBrainsMono.ttf", font_size)
+
+    for i, text in enumerate(text_list):
+        text_surf = font.render(text, True, (255, 255, 255), (30, 30, 30))
+        text_surf.set_alpha(170)
+        screen.blit(text_surf, (0, i * math.ceil(font_size + font_size / 3)))
+
+
+def add_rounded_debug_info(string: str, number: float):
+    debug_info.append(string + str(round(number, 3)))
+
+
+def clear_debug_info():
+    global debug_info
+    debug_info = []
 
 
 if __name__ == '__main__':
