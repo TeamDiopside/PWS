@@ -1,6 +1,6 @@
 ## Wat nog moet
 - Simulatie
-  - Afstand tot muren detecteren (Ray casting/marching?)
+  - ~~Afstand tot muren detecteren (Ray casting/marching?)~~
   - Collision detection
   - Meerdere auto's tegelijk
   - Snelheid van simulatie aanpassen
