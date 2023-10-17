@@ -10,9 +10,11 @@ debug_info: list[str] = []
 
 # voorbeeld muren
 walls = []
+debug_mode = True
 
 
 def main():
+    global debug_mode
     pygame.init()
 
     info = pygame.display.Info()
@@ -23,10 +25,9 @@ def main():
 
     running = True
     frame = 1
-    show_debug_info = False
 
     # Maak stilstaande auto op x coordinaat 800, y coordinaat 450, 90 graden naar links gedraaid
-    car = Car(800, 450, math.pi * -0.5, 0)
+    car = Car(800, 450.5, math.pi * -0.5, 0)
 
     while running:
         for event in pygame.event.get():
@@ -35,8 +36,9 @@ def main():
                 running = False
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_b:
-                    show_debug_info = not show_debug_info
+                    debug_mode = not debug_mode
 
+        debug_info.append("DRUK OP B OM HET DEBUG MENU WEG TE HALEN")
         debug_info.append(f"FPS: {int(clock.get_fps())}")
 
         car.move(screen, frame)
@@ -46,7 +48,9 @@ def main():
         draw_map(screen, car.x, car.y)
 
         car.draw(screen)
-        if show_debug_info:
+        car.calc_rays(screen)
+
+        if debug_mode:
             draw_text(debug_info, screen)
 
         clear_debug_info()
@@ -65,6 +69,9 @@ class Car:
         self.speed: float = speed
         self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = angle
+        self.rays: list[Ray] = []
+        for ray_angle in range(0, 360, 10):  # van 0 tot 180 met stappen van 10 (in een cirkel rond de auto dus)
+            self.rays.append(Ray(ray_angle))
 
     def rotate(self, angle):
         self.angle += angle
@@ -114,54 +121,75 @@ class Car:
         add_rounded_debug_info("X: ", self.x)
         add_rounded_debug_info("Y: ", self.y)
 
-    # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
-    def draw(self, surface: pygame.surface.Surface):
-        image, rect = rotate_image(self.image, math.degrees(self.movement_angle), self.image.get_rect().center,
-                                   pygame.math.Vector2(surface.get_rect().width * 0.5, surface.get_rect().height * 0.5))
-        surface.blit(image, rect)
+    # ray casting om afstand tot 'muren' te detecteren
+    def calc_rays(self, screen: pygame.surface.Surface):
 
-        # ray casting om afstand tot 'muren' te detecteren
-        for wall in walls:
-            x1, y1, x2, y2 = wall
+        for ray in self.rays:
+            ray.intersection = 1
+            ray.distance = ray.length
+            ray.can_draw = False
 
-            pygame.draw.line(surface, (255, 0, 0), (x1, y1), (x2, y2), 5)
-
-            for ray_angle in range(0, 360, 10):  # van 0 tot 180 met stappen van 10 (in een cirkel rond de auto dus)
+            for wall in walls:
+                wall_x1, wall_y1, wall_x2, wall_y2 = wall
 
                 # Meedraaien met de auto
-                ray_angle_radians = math.radians(ray_angle) - self.movement_angle
-                ray_length = 500
+                ray.angle = math.radians(ray.initial_angle) - self.movement_angle
 
                 # positie is afhankelijk van middelpunt van auto en middelpunt van scherm
-                x_position = self.image.get_rect().center[0] + surface.get_rect().width * 0.5
-                y_position = self.image.get_rect().center[1] + surface.get_rect().height * 0.5
+                x_position = self.image.get_rect().center[0] + screen.get_rect().width * 0.5
+                y_position = self.image.get_rect().center[1] + screen.get_rect().height * 0.5
 
                 # Bereken het eindpunt van de ray op basis van de lengte en de hoek
-                ray_eind_x = x_position + ray_length * math.cos(ray_angle_radians)
-                ray_eind_y = y_position + ray_length * math.sin(ray_angle_radians)
-
-
+                ray_eind_x = x_position + ray.length * math.cos(ray.angle)
+                ray_eind_y = y_position + ray.length * math.sin(ray.angle)
 
                 # kijk voor snijpunt
+                snijpunt = (x_position - ray_eind_x) * (wall_y1 - wall_y2) - (y_position - ray_eind_y) * (wall_x1 - wall_x2)
 
-                snijpunt = (x_position - ray_eind_x) * (y1 - y2) - (y_position - ray_eind_y) * (x1 - x2)
                 if snijpunt != 0:
-                    t = ((x_position - x1) * (y1 - y2) - (y_position - y1) * (
-                                x1 - x2)) / snijpunt  # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
-                    u = -((x_position - x1) * (ray_eind_y - y_position) - (y_position - y1) * (
-                                ray_eind_x - x_position)) / snijpunt  # als u >=0 dan ligt het snijpunt aan de voorkant van de ray
+                    # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
+                    t = ((x_position - wall_x1) * (wall_y1 - wall_y2) - (y_position - wall_y1) * (wall_x1 - wall_x2)) / snijpunt
+                    # het punt op de muur (tussen 0 en 1)
+                    u = -((x_position - wall_x1) * (ray_eind_y - y_position) - (y_position - wall_y1) * (ray_eind_x - x_position)) / snijpunt
 
-                    distance = t * ray_length
-                    snijpunt_x = x_position + distance * math.cos(ray_angle_radians)
-                    snijpunt_y = y_position + distance * math.sin(ray_angle_radians)
-                    if 0 <= t <= 1 and u >= 0:
-                        add_rounded_debug_info("Distance: ", distance)
-                        pygame.draw.circle(surface, (255, 255, 255), (snijpunt_x, snijpunt_y), 5)
+                    if 0 <= t <= 1 and 0 <= u <= 1:
+                        ray.can_draw = True
+                        ray.intersection = min(ray.intersection, t)
+                        ray.distance = ray.intersection * ray.length
 
-                        pygame.draw.line(surface, (255, 255, 255), (x_position, y_position), (ray_eind_x, ray_eind_y))
+    # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
+    def draw(self, screen: pygame.surface.Surface):
+        image, rect = rotate_image(self.image, math.degrees(self.movement_angle), self.image.get_rect().center,
+                                   pygame.math.Vector2(screen.get_rect().width * 0.5, screen.get_rect().height * 0.5))
+        screen.blit(image, rect)
+
+        if debug_mode:
+            for ray in self.rays:
+                if ray.can_draw:
+                    x_middle, y_middle = self.get_middle_coords(screen)
+                    snijpunt_x = x_middle + ray.distance * math.cos(ray.angle)
+                    snijpunt_y = y_middle + ray.distance * math.sin(ray.angle)
+
+                    pygame.draw.circle(screen, (255, 255, 255), (snijpunt_x, snijpunt_y), 5)
+                    pygame.draw.line(screen, (255, 255, 255), (x_middle, y_middle), (snijpunt_x, snijpunt_y))
+
+    def get_middle_coords(self, screen):
+        x_position = self.image.get_rect().center[0] + screen.get_rect().width * 0.5
+        y_position = self.image.get_rect().center[1] + screen.get_rect().height * 0.5
+        return x_position, y_position
 
     def __str__(self):
         return f"Car at ({round(self.x)}, {round(self.y)})"
+
+
+class Ray:
+    def __init__(self, angle):
+        self.angle = angle
+        self.initial_angle = angle
+        self.intersection = 1
+        self.can_draw = True
+        self.length = 3000
+        self.distance = 3000
 
 
 # snippet van iemand anders
@@ -186,8 +214,8 @@ def draw_map(screen, cam_x, cam_y):
     # l = links
     # r = rechts
 
-    # built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
-    built_in_map = ["s"]
+    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
+    # built_in_map = ["s"]
 
     x: int = 100 - cam_x + screen.get_rect().width * 0.5
     y: int = 100 - cam_y + screen.get_rect().height * 0.5
@@ -277,7 +305,10 @@ def draw_map(screen, cam_x, cam_y):
         elif tile == "s":
             screen.blit(rotated_straight_roads[angle % 2], rotated_straight_roads[angle % 2].get_rect(center=(x, y)))
 
-        pygame.draw.circle(screen, (255, 0, 0), (x, y), 5)
+        if debug_mode:
+            pygame.draw.circle(screen, (255, 0, 0), (x, y), 5)
+            pygame.draw.line(screen, (255, 0, 0), line_1_start, line_1_end, 5)
+            pygame.draw.line(screen, (255, 0, 0), line_2_start, line_2_end, 5)
 
         walls.append((line_1_start[0], line_1_start[1], line_1_end[0], line_1_end[1]))
         walls.append((line_2_start[0], line_2_start[1], line_2_end[0], line_2_end[1]))
