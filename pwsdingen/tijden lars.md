@@ -27,8 +27,10 @@
 | 6/10  | 11:30 - 12:45 | 1:15 |            Weight verandering maken            |
 | 16/10 | 19:00 - 19:20 | 0:20 |  Alles wat nog gedaan moet worden opschrijven  |
 | 16/10 | 19:35 - 20:40 | 1:05 |              Debug text toevoegen              |
+| 17/10 | 18:30 - 19:10 | 0:40 |                  Ray Casting                   |
+| 17/10 | 20:15 - 00:00 | 0:00 |                  Ray Casting                   |
 
-Totaal: 30:45
+Totaal: 31:25
 
 
 ## Uren

@@ -8,6 +8,9 @@ import neural_network
 
 debug_info: list[str] = []
 
+# voorbeeld muren
+walls = []
+
 
 def main():
     pygame.init()
@@ -20,6 +23,7 @@ def main():
 
     running = True
     frame = 1
+    show_debug_info = False
 
     # Maak stilstaande auto op x coordinaat 800, y coordinaat 450, 90 graden naar links gedraaid
     car = Car(800, 450, math.pi * -0.5, 0)
@@ -29,6 +33,9 @@ def main():
             # afsluiten als je op het kruisje drukt
             if event.type == pygame.QUIT:
                 running = False
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_b:
+                    show_debug_info = not show_debug_info
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
 
@@ -37,8 +44,10 @@ def main():
         # maak scherm grijs
         screen.fill((100, 100, 110))
         draw_map(screen, car.x, car.y)
+
         car.draw(screen)
-        draw_text(debug_info, screen)
+        if show_debug_info:
+            draw_text(debug_info, screen)
 
         clear_debug_info()
         frame += 1
@@ -111,6 +120,46 @@ class Car:
                                    pygame.math.Vector2(surface.get_rect().width * 0.5, surface.get_rect().height * 0.5))
         surface.blit(image, rect)
 
+        # ray casting om afstand tot 'muren' te detecteren
+        for wall in walls:
+            x1, y1, x2, y2 = wall
+
+            pygame.draw.line(surface, (255, 0, 0), (x1, y1), (x2, y2), 5)
+
+            for ray_angle in range(0, 360, 10):  # van 0 tot 180 met stappen van 10 (in een cirkel rond de auto dus)
+
+                # Meedraaien met de auto
+                ray_angle_radians = math.radians(ray_angle) - self.movement_angle
+                ray_length = 500
+
+                # positie is afhankelijk van middelpunt van auto en middelpunt van scherm
+                x_position = self.image.get_rect().center[0] + surface.get_rect().width * 0.5
+                y_position = self.image.get_rect().center[1] + surface.get_rect().height * 0.5
+
+                # Bereken het eindpunt van de ray op basis van de lengte en de hoek
+                ray_eind_x = x_position + ray_length * math.cos(ray_angle_radians)
+                ray_eind_y = y_position + ray_length * math.sin(ray_angle_radians)
+
+
+
+                # kijk voor snijpunt
+
+                snijpunt = (x_position - ray_eind_x) * (y1 - y2) - (y_position - ray_eind_y) * (x1 - x2)
+                if snijpunt != 0:
+                    t = ((x_position - x1) * (y1 - y2) - (y_position - y1) * (
+                                x1 - x2)) / snijpunt  # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
+                    u = -((x_position - x1) * (ray_eind_y - y_position) - (y_position - y1) * (
+                                ray_eind_x - x_position)) / snijpunt  # als u >=0 dan ligt het snijpunt aan de voorkant van de ray
+
+                    distance = t * ray_length
+                    snijpunt_x = x_position + distance * math.cos(ray_angle_radians)
+                    snijpunt_y = y_position + distance * math.sin(ray_angle_radians)
+                    if 0 <= t <= 1 and u >= 0:
+                        add_rounded_debug_info("Distance: ", distance)
+                        pygame.draw.circle(surface, (255, 255, 255), (snijpunt_x, snijpunt_y), 5)
+
+                        pygame.draw.line(surface, (255, 255, 255), (x_position, y_position), (ray_eind_x, ray_eind_y))
+
     def __str__(self):
         return f"Car at ({round(self.x)}, {round(self.y)})"
 
@@ -137,10 +186,13 @@ def draw_map(screen, cam_x, cam_y):
     # l = links
     # r = rechts
 
-    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
+    # built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
+    built_in_map = ["s"]
 
     x: int = 100 - cam_x + screen.get_rect().width * 0.5
     y: int = 100 - cam_y + screen.get_rect().height * 0.5
+    x1, x2, x3, x4 = -0.5, -0.5, -0.5, 0.5
+    y1, y2, y3, y4 = -0.5, +0.5, -0.5, -0.5
     angle = 0
     size = 200
 
@@ -160,27 +212,75 @@ def draw_map(screen, cam_x, cam_y):
         3: pygame.transform.rotate(turn_road, 270)
     }
 
+    walls.clear()
     for tile in built_in_map:
-
-        if tile == "r":
-            angle += 1
-            screen.blit(rotated_turn_roads[(angle * -1 + 6) % 4], rotated_turn_roads[(angle * -1 + 6) % 4].get_rect(center=(x, y)))
-        elif tile == "l":
-            angle -= 1
-            screen.blit(rotated_turn_roads[(angle * -1 + 3) % 4], rotated_turn_roads[(angle * -1 + 3) % 4].get_rect(center=(x, y)))
-        elif tile == "s":
-            screen.blit(rotated_straight_roads[angle % 2], rotated_straight_roads[angle % 2].get_rect(center=(x, y)))
-
         real_angle = angle % 4
 
         if real_angle == 0:
             x += size
+            if tile == "r":
+                x1, x2, y1, y2 = -0.5, 0.5, -0.5, -0.5
+                x3, x4, y3, y4 = 0.5, 0.5, -0.5, 0.5
+            elif tile == "s":
+                x1, x2, y1, y2 = -0.5, 0.5, -0.5, -0.5
+                x3, x4, y3, y4 = -0.5, 0.5, 0.5, 0.5
+            elif tile == "l":
+                x1, x2, y1, y2 = 0.5, 0.5, -0.5, 0.5
+                x3, x4, y3, y4 = -0.5, 0.5, 0.5, 0.5
         elif real_angle == 1:
             y += size
+            if tile == "r":
+                x1, x2, y1, y2 = 0.5, 0.5, -0.5, 0.5
+                x3, x4, y3, y4 = -0.5, 0.5, 0.5, 0.5
+            elif tile == "s":
+                x1, x2, y1, y2 = -0.5, -0.5, -0.5, 0.5
+                x3, x4, y3, y4 = 0.5, 0.5, -0.5, 0.5
+            elif tile == "l":
+                x1, x2, y1, y2 = -0.5, 0.5, 0.5, 0.5
+                x3, x4, y3, y4 = -0.5, -0.5, -0.5, 0.5
         elif real_angle == 2:
             x -= size
+            if tile == "r":
+                x1, x2, y1, y2 = -0.5, 0.5, 0.5, 0.5
+                x3, x4, y3, y4 = -0.5, -0.5, -0.5, 0.5
+            elif tile == "s":
+                x1, x2, y1, y2 = 0.5, -0.5, 0.5, 0.5
+                x3, x4, y3, y4 = 0.5, -0.5, -0.5, -0.5
+            elif tile == "l":
+                x1, x2, y1, y2 = -0.5, -0.5, -0.5, 0.5
+                x3, x4, y3, y4 = 0.5, -0.5, -0.5, -0.5
         elif real_angle == 3:
             y -= size
+            if tile == "r":
+                x1, x2, y1, y2 = -0.5, -0.5, -0.5, 0.5
+                x3, x4, y3, y4 = -0.5, 0.5, -0.5, -0.5
+            elif tile == "s":
+                x1, x2, y1, y2 = 0.5, 0.5, -0.5, 0.5
+                x3, x4, y3, y4 = -0.5, -0.5, -0.5, 0.5
+            elif tile == "l":
+                x1, x2, y1, y2 = 0.5, -0.5, -0.5, -0.5
+                x3, x4, y3, y4 = 0.5, 0.5, -0.5, 0.5
+
+        line_1_start = (x + x1 * size, y + y1 * size)
+        line_1_end = (x + x2 * size, y + y2 * size)
+        line_2_start = (x + x3 * size, y + y3 * size)
+        line_2_end = (x + x4 * size, y + y4 * size)
+
+        if tile == "r":
+            angle += 1
+            screen.blit(rotated_turn_roads[(angle * -1 + 6) % 4],
+                        rotated_turn_roads[(angle * -1 + 6) % 4].get_rect(center=(x, y)))
+        elif tile == "l":
+            angle -= 1
+            screen.blit(rotated_turn_roads[(angle * -1 + 3) % 4],
+                        rotated_turn_roads[(angle * -1 + 3) % 4].get_rect(center=(x, y)))
+        elif tile == "s":
+            screen.blit(rotated_straight_roads[angle % 2], rotated_straight_roads[angle % 2].get_rect(center=(x, y)))
+
+        pygame.draw.circle(screen, (255, 0, 0), (x, y), 5)
+
+        walls.append((line_1_start[0], line_1_start[1], line_1_end[0], line_1_end[1]))
+        walls.append((line_2_start[0], line_2_start[1], line_2_end[0], line_2_end[1]))
 
 
 def draw_text(text_list: list[str], screen: pygame.surface.Surface):

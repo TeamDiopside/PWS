@@ -22,5 +22,6 @@
 | 6/10  | 11:30 - 12:45 | 1:15 |                  Weight verandering maken                   |
 | 10/10 | 15:45 - 17:15 | 1:30 |                Het tekenen van de weg fixen                 |
 | 16/10 | 15:20 - 15:35 | 0:15 |                Progressiedocument bijwerken                 |
+| 17/10 | 15:50 - 00:00 | 0:00 |                         Ray Casting                         |
 
 Totaal: 24:30
