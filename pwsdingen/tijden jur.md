@@ -23,7 +23,6 @@
 | 10/10 | 15:45 - 17:15 | 1:30 |                Het tekenen van de weg fixen                 |
 | 16/10 | 15:20 - 15:35 | 0:15 |                Progressiedocument bijwerken                 |
 | 17/10 | 15:50 - 22:00 | 6:10 |                         Ray Casting                         |
+| 18/10 | 12:15 - 12:35 | 0:20 |                   Gesprekje met De Kogel                    |
 
-Totaal: 30:40
-
-18/10: 12:15-12:35 praat praat 
+Totaal: 31:00

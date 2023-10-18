@@ -29,8 +29,9 @@
 | 16/10 | 19:35 - 20:40 | 1:05 |              Debug text toevoegen              |
 | 17/10 | 18:30 - 19:10 | 0:40 |              Ray Casting beginnen              |
 | 17/10 | 20:15 - 22:00 | 1:45 |              Ray Casting afmaken               |
+| 18/10 | 12:15 - 12:35 | 0:20 |             Gesprekje met De Kogel             |
 
-Totaal: 33:10
+Totaal: 33:30
 
 
 ## Uren

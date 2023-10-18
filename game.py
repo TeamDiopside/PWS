@@ -8,7 +8,6 @@ import neural_network
 
 debug_info: list[str] = []
 
-# voorbeeld muren
 walls = []
 debug_mode = True
 
@@ -70,7 +69,7 @@ class Car:
         self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = angle
         self.rays: list[Ray] = []
-        for ray_angle in range(0, 360, 10):  # van 0 tot 180 met stappen van 10 (in een cirkel rond de auto dus)
+        for ray_angle in range(0, 360, 10):  # van 0 tot 360 met stappen van 10 (in een cirkel rond de auto dus)
             self.rays.append(Ray(ray_angle))
 
     def rotate(self, angle):
@@ -148,13 +147,13 @@ class Car:
 
                 if snijpunt != 0:
                     # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
-                    t = ((x_position - wall_x1) * (wall_y1 - wall_y2) - (y_position - wall_y1) * (wall_x1 - wall_x2)) / snijpunt
+                    f_ray = ((x_position - wall_x1) * (wall_y1 - wall_y2) - (y_position - wall_y1) * (wall_x1 - wall_x2)) / snijpunt
                     # het punt op de muur (tussen 0 en 1)
-                    u = -((x_position - wall_x1) * (ray_eind_y - y_position) - (y_position - wall_y1) * (ray_eind_x - x_position)) / snijpunt
+                    f_muur = -((x_position - wall_x1) * (ray_eind_y - y_position) - (y_position - wall_y1) * (ray_eind_x - x_position)) / snijpunt
 
-                    if 0 <= t <= 1 and 0 <= u <= 1:
+                    if 0 <= f_ray <= 1 and 0 <= f_muur <= 1:
                         ray.can_draw = True
-                        ray.intersection = min(ray.intersection, t)
+                        ray.intersection = min(ray.intersection, f_ray)
                         ray.distance = ray.intersection * ray.length
 
     # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
