@@ -30,8 +30,9 @@
 | 17/10 | 18:30 - 19:10 | 0:40 |              Ray Casting beginnen              |
 | 17/10 | 20:15 - 22:00 | 1:45 |              Ray Casting afmaken               |
 | 18/10 | 12:15 - 12:35 | 0:20 |             Gesprekje met De Kogel             |
+| 18/10 | 20:00 - 23:30 | 3:30 |   Grote refactor voor het maken van de wegen   |
 
-Totaal: 33:30
+Totaal: 37:00
 
 
 ## Uren
