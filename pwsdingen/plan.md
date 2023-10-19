@@ -1,10 +1,11 @@
 ## Wat nog moet
 - Simulatie
   - ~~Afstand tot muren detecteren (Ray casting/marching?)~~
-  - Collision detection
+  - ~~Collision detection~~
   - Meerdere auto's tegelijk
   - Snelheid van simulatie aanpassen
   - Camera tussen vast en auto volgen kunnen switchen
+  - Afstand tot finish detecteren
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
   - De weights elke generatie een beetje aanpassen

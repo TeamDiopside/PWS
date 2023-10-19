@@ -21,10 +21,10 @@ def main(inputs, cycle):
         all_weights = get_weights_from_file("data/test.json")
 
     # uitrekenen van layers achter elkaar
-    # for weight in all_weights:
-    #     inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
-    #     for x in range(len(inputs)):
-    #         inputs[x] = sigmoid(inputs[x])  # alles door de sigmoid functie halen
+    for weight in all_weights:
+        inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
+        for x in range(len(inputs)):
+            inputs[x] = sigmoid(inputs[x])  # alles door de sigmoid functie halen
 
     change_weights(all_weights, cycle)
 

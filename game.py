@@ -7,7 +7,7 @@ import pygame
 import neural_network
 
 debug_info: list[str] = []
-debug_mode = 3
+debug_mode = 4
 
 
 def main():
@@ -40,11 +40,14 @@ def main():
                     debug_mode = 2
                 if event.key == pygame.K_3:
                     debug_mode = 3
+                if event.key == pygame.K_4:
+                    debug_mode = 4
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
 
         car.move(screen, frame)
         car.calc_rays(screen, roads, car.x, car.y)
+        car.calc_distance_to_middle(screen, roads, car.x, car.y)
 
         if car.rays[0].intersections % 2 == 0:
             debug_info.append("Niet op de weg!!!")
@@ -105,63 +108,56 @@ class Road:
         self.angle: int = angle
         self.size: int = size
         self.edges = self.create_edges()
+        self.middle_lines = self.create_middle()
 
+    # de coordinaten maken voor de randen die bij het type weg horen
     def create_edges(self):
-        edges_ = []
+        edges = []
+        coords = []
 
-        x1, x2, x3, x4 = -0.5, -0.5, -0.5, 0.5
-        y1, y2, y3, y4 = -0.5, +0.5, -0.5, -0.5
+        if self.road_type == "r":
+            coords.append((-1, -1, 1, -1))
+            coords.append((1, -1, 1, 1))
+        elif self.road_type == "s":
+            coords.append((-1, -1, 1, -1))
+            coords.append((-1, 1, 1, 1))
+        elif self.road_type == "l":
+            coords.append((1, -1, 1, 1))
+            coords.append((-1, 1, 1, 1))
 
-        if self.angle == 0:
-            if self.road_type == "r":
-                x1, x2, y1, y2 = -0.5, 0.5, -0.5, -0.5
-                x3, x4, y3, y4 = 0.5, 0.5, -0.5, 0.5
-            elif self.road_type == "s":
-                x1, x2, y1, y2 = -0.5, 0.5, -0.5, -0.5
-                x3, x4, y3, y4 = -0.5, 0.5, 0.5, 0.5
-            elif self.road_type == "l":
-                x1, x2, y1, y2 = 0.5, 0.5, -0.5, 0.5
-                x3, x4, y3, y4 = -0.5, 0.5, 0.5, 0.5
-        elif self.angle == 90:
-            if self.road_type == "r":
-                x1, x2, y1, y2 = 0.5, 0.5, -0.5, 0.5
-                x3, x4, y3, y4 = -0.5, 0.5, 0.5, 0.5
-            elif self.road_type == "s":
-                x1, x2, y1, y2 = -0.5, -0.5, -0.5, 0.5
-                x3, x4, y3, y4 = 0.5, 0.5, -0.5, 0.5
-            elif self.road_type == "l":
-                x1, x2, y1, y2 = -0.5, 0.5, 0.5, 0.5
-                x3, x4, y3, y4 = -0.5, -0.5, -0.5, 0.5
-        elif self.angle == 180:
-            if self.road_type == "r":
-                x1, x2, y1, y2 = -0.5, 0.5, 0.5, 0.5
-                x3, x4, y3, y4 = -0.5, -0.5, -0.5, 0.5
-            elif self.road_type == "s":
-                x1, x2, y1, y2 = 0.5, -0.5, 0.5, 0.5
-                x3, x4, y3, y4 = 0.5, -0.5, -0.5, -0.5
-            elif self.road_type == "l":
-                x1, x2, y1, y2 = -0.5, -0.5, -0.5, 0.5
-                x3, x4, y3, y4 = 0.5, -0.5, -0.5, -0.5
-        elif self.angle == 270:
-            if self.road_type == "r":
-                x1, x2, y1, y2 = -0.5, -0.5, -0.5, 0.5
-                x3, x4, y3, y4 = -0.5, 0.5, -0.5, -0.5
-            elif self.road_type == "s":
-                x1, x2, y1, y2 = 0.5, 0.5, -0.5, 0.5
-                x3, x4, y3, y4 = -0.5, -0.5, -0.5, 0.5
-            elif self.road_type == "l":
-                x1, x2, y1, y2 = 0.5, -0.5, -0.5, -0.5
-                x3, x4, y3, y4 = 0.5, 0.5, -0.5, 0.5
+        for pair in coords:
+            vector1 = rotate_vector([pair[0], pair[1]], self.angle)
+            vector2 = rotate_vector([pair[2], pair[3]], self.angle)
 
-        line_1_start = (self.x + x1 * self.size, self.y + y1 * self.size)
-        line_1_end = (self.x + x2 * self.size, self.y + y2 * self.size)
-        line_2_start = (self.x + x3 * self.size, self.y + y3 * self.size)
-        line_2_end = (self.x + x4 * self.size, self.y + y4 * self.size)
+            start = (self.x + vector1[0] * self.size * 0.5, self.y + vector1[1] * self.size * 0.5)
+            end = (self.x + vector2[0] * self.size * 0.5, self.y + vector2[1] * self.size * 0.5)
+            edges.append((start[0], start[1], end[0], end[1]))
 
-        edges_.append((line_1_start[0], line_1_start[1], line_1_end[0], line_1_end[1]))
-        edges_.append((line_2_start[0], line_2_start[1], line_2_end[0], line_2_end[1]))
+        return edges
 
-        return edges_
+    # de coordinaten maken voor de randen die bij het type weg horen
+    def create_middle(self):
+        middle = []
+        coords = []
+
+        if self.road_type == "r":
+            coords.append((0, 0, -1, 0))
+            coords.append((0, 1, 0, 0))
+        elif self.road_type == "s":
+            coords.append((-1, 0, 1, 0))
+        elif self.road_type == "l":
+            coords.append((0, 0, 0, -1))
+            coords.append((-1, 0, 0, 0))
+
+        for pair in coords:
+            vector1 = rotate_vector([pair[0], pair[1]], self.angle)
+            vector2 = rotate_vector([pair[2], pair[3]], self.angle)
+
+            start = (self.x + vector1[0] * self.size * 0.5, self.y + vector1[1] * self.size * 0.5)
+            end = (self.x + vector2[0] * self.size * 0.5, self.y + vector2[1] * self.size * 0.5)
+            middle.append((start[0], start[1], end[0], end[1]))
+
+        return middle
 
     def draw(self, screen: pygame.surface.Surface, cam_x, cam_y):
         straight_road = pygame.image.load("assets/road_straight.png")
@@ -179,10 +175,25 @@ class Road:
             screen.blit(image, image.get_rect(center=destination))
 
         if debug_mode == 3:
-            pygame.draw.circle(screen, (255, 0, 0), destination, 5)
-
+            pygame.draw.circle(screen, (220, 20, 20), destination, 5)
             for edge in self.edges:
-                pygame.draw.line(screen, (255, 0, 0), (edge[0] - cam_x, edge[1] - cam_y), (edge[2] - cam_x, edge[3] - cam_y), 5)
+                pygame.draw.line(screen, (240, 20, 50), (edge[0] - cam_x, edge[1] - cam_y),
+                                 (edge[2] - cam_x, edge[3] - cam_y), 5)
+
+        if debug_mode == 4:
+            for middle_line in self.middle_lines:
+                pygame.draw.line(screen, (0, 200, 200), (middle_line[0] - cam_x, middle_line[1] - cam_y),
+                                 (middle_line[2] - cam_x, middle_line[3] - cam_y), 5)
+
+
+# dit kennen we
+def rotate_vector(vector, angle):
+    angle = numpy.radians(angle)
+    matrix = [
+        [math.cos(angle), -math.sin(angle)],
+        [math.sin(angle), math.cos(angle)]
+    ]
+    return numpy.matmul(matrix, vector)
 
 
 class Car:
@@ -195,6 +206,8 @@ class Car:
         self.speed: float = speed
         self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = angle
+        self.middle_intersection = (0, 0)
+        self.distance_from_middle = 0
 
         # van 0 tot 360 met stappen van 10 (in een cirkel rond de auto dus)
         self.rays: list[Ray] = []
@@ -273,24 +286,22 @@ class Car:
                     ray.angle = math.radians(ray.initial_angle) - self.movement_angle
 
                     # positie is afhankelijk van middelpunt van auto en middelpunt van scherm
-                    x_position = self.image.get_rect().center[0] + screen.get_rect().width * 0.5
-                    y_position = self.image.get_rect().center[1] + screen.get_rect().height * 0.5
+                    x_position, y_position = self.get_middle_coords(screen)
 
                     # Bereken het eindpunt van de ray op basis van de lengte en de hoek
                     ray_eind_x = x_position + ray.length * math.cos(ray.angle)
                     ray_eind_y = y_position + ray.length * math.sin(ray.angle)
 
-                    # kijk voor snijpunt
-                    snijpunt = (x_position - ray_eind_x) * (edge_y1 - edge_y2) - (y_position - ray_eind_y) * (
-                                edge_x1 - edge_x2)
+                    cross_product = ((x_position - ray_eind_x) * (edge_y1 - edge_y2)
+                                     - (y_position - ray_eind_y) * (edge_x1 - edge_x2))
 
-                    if snijpunt != 0:
+                    if cross_product != 0:
                         # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
-                        f_ray = ((x_position - edge_x1) * (edge_y1 - edge_y2) - (y_position - edge_y1) * (
-                                    edge_x1 - edge_x2)) / snijpunt
+                        f_ray = ((x_position - edge_x1) * (edge_y1 - edge_y2)
+                                 - (y_position - edge_y1) * (edge_x1 - edge_x2)) / cross_product
                         # het punt op de muur (tussen 0 en 1)
-                        f_muur = -((x_position - edge_x1) * (ray_eind_y - y_position) - (y_position - edge_y1) * (
-                                    ray_eind_x - x_position)) / snijpunt
+                        f_muur = -((x_position - edge_x1) * (ray_eind_y - y_position)
+                                   - (y_position - edge_y1) * (ray_eind_x - x_position)) / cross_product
 
                         if 0 <= f_ray <= 1 and 0 <= f_muur <= 1:
                             ray.can_draw = True
@@ -298,7 +309,35 @@ class Car:
                             ray.intersections += 1
                             ray.distance = ray.intersection * ray.length
 
-    # draw gebeurt ook 60 keer per seconde, past veranderingen van move toe op het scherm
+    def calc_distance_to_middle(self, screen: pygame.surface.Surface, roads: list[Road], cam_x, cam_y):
+        self.distance_from_middle = 100
+        x_middle, y_middle = self.get_middle_coords(screen)
+
+        for road in roads:
+            for middle_line in road.middle_lines:
+                mx1, my1, mx2, my2 = middle_line
+                mx1 -= cam_x
+                mx2 -= cam_x
+                my1 -= cam_y
+                my2 -= cam_y
+
+                perpendicular = (rotate_vector((middle_line[0], middle_line[1]), 90), rotate_vector((middle_line[2], middle_line[3]), 90))
+                px1 = perpendicular[0][0] + x_middle
+                py1 = perpendicular[0][1] + y_middle
+                px2 = perpendicular[1][0] + x_middle
+                py2 = perpendicular[1][1] + y_middle
+
+                cross_product = ((mx1 - mx2) * (py1 - py2) - (my1 - my2) * (px1 - px2))
+
+                if cross_product != 0:
+                    f = ((mx1 - px1) * (py1 - py2) - (my1 - py1) * (px1 - px2)) / cross_product
+
+                    if 0 <= f <= 1:
+                        intersection = (px1 + f * (px2 - px1), py1 + f * (py2 - py1))
+                        self.middle_intersection = intersection
+                        # self.distance_from_middle = min(self.distance_from_middle, )
+
+    # draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface):
         image, rect = rotate_image(self.image, math.degrees(self.movement_angle), self.image.get_rect().center,
                                    pygame.math.Vector2(screen.get_rect().width * 0.5, screen.get_rect().height * 0.5))
@@ -313,6 +352,10 @@ class Car:
 
                     pygame.draw.circle(screen, (255, 255, 255), (snijpunt_x, snijpunt_y), 5)
                     pygame.draw.line(screen, (255, 255, 255), (x_middle, y_middle), (snijpunt_x, snijpunt_y))
+
+        if debug_mode == 4:
+            x_middle, y_middle = self.get_middle_coords(screen)
+            pygame.draw.line(screen, (255, 255, 255), (x_middle, y_middle), self.middle_intersection)
 
     def get_middle_coords(self, screen):
         x_position = self.image.get_rect().center[0] + screen.get_rect().width * 0.5
