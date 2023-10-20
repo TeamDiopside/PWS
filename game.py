@@ -206,8 +206,7 @@ class Car:
         self.speed: float = speed
         self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = angle
-        self.middle_intersection = (0, 0)
-        self.distance_from_middle = 0
+        self.middle_point: tuple[int, int] = (0, 0)
 
         # van 0 tot 360 met stappen van 10 (in een cirkel rond de auto dus)
         self.rays: list[Ray] = []
@@ -310,7 +309,7 @@ class Car:
                             ray.distance = ray.intersection * ray.length
 
     def calc_distance_to_middle(self, screen: pygame.surface.Surface, roads: list[Road], cam_x, cam_y):
-        self.distance_from_middle = 100
+        self.middle_point = None
         x_middle, y_middle = self.get_middle_coords(screen)
 
         for road in roads:
@@ -321,21 +320,29 @@ class Car:
                 my1 -= cam_y
                 my2 -= cam_y
 
-                perpendicular = (rotate_vector((middle_line[0], middle_line[1]), 90), rotate_vector((middle_line[2], middle_line[3]), 90))
-                px1 = perpendicular[0][0] + x_middle
-                py1 = perpendicular[0][1] + y_middle
-                px2 = perpendicular[1][0] + x_middle
-                py2 = perpendicular[1][1] + y_middle
+                px1 = x_middle
+                py1 = y_middle
+                px2 = px1 - my1 - my2
+                py2 = py1 + mx1 - mx2
 
-                cross_product = ((mx1 - mx2) * (py1 - py2) - (my1 - my2) * (px1 - px2))
+                cross_product = (mx1 - mx2) * (py1 - py2) - (my1 - my2) * (px1 - px2)
 
                 if cross_product != 0:
-                    f = ((mx1 - px1) * (py1 - py2) - (my1 - py1) * (px1 - px2)) / cross_product
+                    # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
+                    f_perp = ((px1 - mx1) * (my1 - my2) - (py1 - my1) * (mx1 - mx2)) / cross_product
+                    # het punt op de muur (tussen 0 en 1)
+                    f_middle = -((px1 - mx1) * (py2 - py1) - (py1 - my1) * (px2 - px1)) / cross_product
 
-                    if 0 <= f <= 1:
-                        intersection = (px1 + f * (px2 - px1), py1 + f * (py2 - py1))
-                        self.middle_intersection = intersection
-                        # self.distance_from_middle = min(self.distance_from_middle, )
+                    if 0 <= f_middle <= 1:
+                        int_x = px1 + f_perp * px2
+                        int_y = py1 + f_perp * py2
+                        if self.middle_point is not None:
+                            distance = math.sqrt(self.middle_point[0] * self.middle_point[0] + self.middle_point[1] * self.middle_point[1])
+                            new_distance = math.sqrt(int_x * int_x + int_y * int_y)
+                            if new_distance < distance:
+                                self.middle_point = (int_x, int_y)
+                        else:
+                            self.middle_point = (int_x, int_y)
 
     # draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface):
@@ -353,9 +360,9 @@ class Car:
                     pygame.draw.circle(screen, (255, 255, 255), (snijpunt_x, snijpunt_y), 5)
                     pygame.draw.line(screen, (255, 255, 255), (x_middle, y_middle), (snijpunt_x, snijpunt_y))
 
-        if debug_mode == 4:
+        if debug_mode == 4 and self.middle_point is not None:
             x_middle, y_middle = self.get_middle_coords(screen)
-            pygame.draw.line(screen, (255, 255, 255), (x_middle, y_middle), self.middle_intersection)
+            pygame.draw.line(screen, (255, 255, 255), (x_middle, y_middle), self.middle_point)
 
     def get_middle_coords(self, screen):
         x_position = self.image.get_rect().center[0] + screen.get_rect().width * 0.5

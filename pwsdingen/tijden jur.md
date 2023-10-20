@@ -25,5 +25,6 @@
 | 17/10 | 15:50 - 22:00 | 6:10 |                         Ray Casting                         |
 | 18/10 | 12:15 - 12:35 | 0:20 |                   Gesprekje met De Kogel                    |
 | 19/10 | 15:20 - 16:30 | 1:10 | Beginnen met de afstand tot het midden van de weg berekenen |
+| 20/10 | 11:30 - 12:40 | 1:10 |                      Middellijn drama                       |
 
-Totaal: 32:10
+Totaal: 33:20

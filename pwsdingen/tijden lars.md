@@ -32,8 +32,9 @@
 | 18/10 | 12:15 - 12:35 | 0:20 |                   Gesprekje met De Kogel                    |
 | 18/10 | 20:00 - 23:30 | 3:30 |         Grote refactor voor het maken van de wegen          |
 | 19/10 | 15:20 - 17:15 | 1:55 | Beginnen met de afstand tot het midden van de weg berekenen |
+| 20/10 | 11:30 - 12:40 | 1:10 |                      Middellijn drama                       |
 
-Totaal: 38:55
+Totaal: 40:05
 
 
 ## Uren
