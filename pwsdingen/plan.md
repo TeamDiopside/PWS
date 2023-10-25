@@ -4,8 +4,10 @@
   - ~~Collision detection~~
   - Meerdere auto's tegelijk
   - Snelheid van simulatie aanpassen
-  - Camera tussen vast en auto volgen kunnen switchen
+  - ~~Camera tussen vast en auto volgen kunnen switchen~~
   - Afstand tot finish detecteren
+    - ~~Punt dat het dichtst bij het midden van de weg zit vinden~~
+  - Alles naar vectoren veranderen
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
   - De weights elke generatie een beetje aanpassen
