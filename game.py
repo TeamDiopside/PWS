@@ -51,7 +51,7 @@ def main():
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
 
-        car.move(screen, frame)
+        car.move(frame)
 
         if cam_mode == 1:
             cam.move()
@@ -70,8 +70,8 @@ def main():
         screen.fill((100, 100, 110))
 
         for road in roads:
-            road.draw(screen, cam.x, cam.y)
-        car.draw(screen, cam.x, cam.y)
+            road.draw(screen, cam)
+        car.draw(screen, cam)
 
         if debug_mode > 1:
             draw_text(debug_info, screen)
@@ -214,10 +214,10 @@ class Road:
 
         return middle
 
-    def draw(self, screen: pygame.surface.Surface, cam_x, cam_y):
+    def draw(self, screen: pygame.surface.Surface, cam):
         straight_road = pygame.image.load("assets/road_straight.png")
         turn_road = pygame.image.load("assets/road_turn.png")
-        destination = world_to_screen((self.x, self.y), cam_x, cam_y, screen)
+        destination = world_to_screen((self.x, self.y), cam.x, cam.y, screen)
 
         if self.road_type == "r":
             image = pygame.transform.rotate(turn_road, -self.angle + 90)
@@ -232,14 +232,14 @@ class Road:
         if debug_mode == 3:
             pygame.draw.circle(screen, (220, 20, 20), destination, 5)
             for edge in self.edges:
-                pygame.draw.line(screen, (240, 20, 50), world_to_screen((edge[0], edge[1]), cam_x, cam_y, screen),
-                                 world_to_screen((edge[2], edge[3]), cam_x, cam_y, screen), 5)
+                pygame.draw.line(screen, (240, 20, 50), world_to_screen((edge[0], edge[1]), cam.x, cam.y, screen),
+                                 world_to_screen((edge[2], edge[3]), cam.x, cam.y, screen), 5)
 
         if debug_mode == 4:
             for middle_line in self.middle_lines:
                 pygame.draw.line(screen, (0, 200, 200),
-                                 world_to_screen((middle_line[0], middle_line[1]), cam_x, cam_y, screen),
-                                 world_to_screen((middle_line[2], middle_line[3]), cam_x, cam_y, screen), 5)
+                                 world_to_screen((middle_line[0], middle_line[1]), cam.x, cam.y, screen),
+                                 world_to_screen((middle_line[2], middle_line[3]), cam.x, cam.y, screen), 5)
 
 
 # dit kennen we
@@ -273,7 +273,7 @@ class Car:
         self.angle += angle
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
-    def move(self, screen, frame):
+    def move(self, frame):
         self.speed *= 0.97
         acceleration = 0.6
 
@@ -360,7 +360,8 @@ class Car:
                             ray.intersection = min(ray.intersection, f_ray)
                             ray.intersections += 1
                             ray.distance = ray.intersection * ray.length
-                            add_rounded_debug_info("Distance: ", ray.distance)
+                            if debug_mode == 3:
+                                add_rounded_debug_info("Distance: ", ray.distance)
 
     def calc_distance_to_middle(self, roads: list[Road]):
         self.middle_point = None
@@ -381,7 +382,7 @@ class Car:
                     # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
                     f_perp = ((px1 - mx1) * (my1 - my2) - (py1 - my1) * (mx1 - mx2)) / cross_product
                     # het punt op de muur (tussen 0 en 1)
-                    f_middle = -((px1 - mx1) * (py2 - py1) - (py1 - my1) * (px2 - px1)) / cross_product
+                    f_middle = -((px1 - mx1) * (my2 - py1) - (py1 - my1) * (mx2 - px1)) / cross_product
 
                     if 0 <= f_middle <= 1:
                         int_x = px1 + f_perp * px2
@@ -397,8 +398,8 @@ class Car:
                             self.middle_point = (int_x, int_y)
 
     # draw past veranderingen van move toe op het scherm
-    def draw(self, screen: pygame.surface.Surface, cam_x, cam_y):
-        screen_coords = world_to_screen(self.get_middle_coords(), cam_x, cam_y, screen)
+    def draw(self, screen: pygame.surface.Surface, cam):
+        screen_coords = world_to_screen(self.get_middle_coords(), cam.x, cam.y, screen)
         add_rounded_debug_info("Screen X: ", screen_coords[0])
         add_rounded_debug_info("Screen Y: ", screen_coords[1])
         image, rect = rotate_image(self.image, math.degrees(self.movement_angle), screen_coords)
@@ -415,7 +416,7 @@ class Car:
                     pygame.draw.line(screen, (255, 255, 255), screen_coords, (snijpunt_x, snijpunt_y))
 
         if debug_mode == 4 and self.middle_point is not None:
-            pygame.draw.line(screen, (255, 255, 255), screen_coords, self.middle_point)
+            pygame.draw.line(screen, (255, 255, 255), screen_coords, world_to_screen(self.middle_point, cam.x, cam.y, screen))
 
     def get_middle_coords(self):
         return self.x, self.y
