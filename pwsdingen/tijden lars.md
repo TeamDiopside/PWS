@@ -33,10 +33,7 @@
 | 18/10 | 20:00 - 23:30 | 3:30 |         Grote refactor voor het maken van de wegen          |
 | 19/10 | 15:20 - 17:15 | 1:55 | Beginnen met de afstand tot het midden van de weg berekenen |
 | 20/10 | 11:30 - 12:40 | 1:10 |                      Middellijn drama                       |
-| 20/10 | 14:05 - 16:40 | 2:35 |              Middellijn, camera mode 1 bewegen              |
+| 25/10 | 14:05 - 16:40 | 2:35 |              Middellijn, camera mode 1 bewegen              |
+| 25/10 | 22:00 - 23:30 | 1:30 |                   Meer met vectoren doen                    |
 
-Totaal: 42:40
-
-
-## Uren
-- 16/10
+Totaal: 42:10

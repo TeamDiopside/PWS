@@ -27,5 +27,6 @@
 | 19/10 | 15:20 - 16:30 | 1:10 |  Beginnen met de afstand tot het midden van de weg berekenen   |
 | 20/10 | 11:30 - 12:40 | 1:10 |                        Middellijn drama                        |
 | 25/10 | 12:30 - 16:40 | 4:10 | Coordinaten categoriseren, camera modes, middellijn, meer auto |
+| 25/10 | 22:10 - 23:30 | 1:20 |                     Meer met vectoren doen                     |
 
-Totaal: 37:30
+Totaal: 38:50
