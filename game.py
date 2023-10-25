@@ -8,11 +8,11 @@ import neural_network
 
 debug_info: list[str] = []
 debug_mode = 4
-cam_mode = 2
+loose_cam = False
 
 
 def main():
-    global debug_mode, cam_mode
+    global debug_mode, loose_cam
     pygame.init()
 
     info = pygame.display.Info()
@@ -24,8 +24,14 @@ def main():
     running = True
     frame = 1
 
-    # Maak stilstaande auto 90 graden naar links gedraaid
-    car = Car(0, 0.3, math.pi * -0.5, 0)
+    # Maak auto's
+    car_amount = 5
+    cars: list[Car] = []
+    selected_car_index = 0
+
+    for i in range(car_amount):
+        cars.append(Car(0, 0.3, math.pi * -0.5, 0))
+
     cam = Camera(0, 0)
 
     roads = create_roads()
@@ -44,34 +50,44 @@ def main():
                     debug_mode = 3
                 if event.key == pygame.K_4:
                     debug_mode = 4
-                if event.key == pygame.K_F1:
-                    cam_mode = 1
-                if event.key == pygame.K_F2:
-                    cam_mode = 2
+                if event.key == pygame.K_e:
+                    loose_cam = not loose_cam
+                if event.key == pygame.K_LEFTBRACKET:
+                    selected_car_index -= 1
+                    selected_car_index = selected_car_index % car_amount
+                if event.key == pygame.K_RIGHTBRACKET:
+                    selected_car_index += 1
+                    selected_car_index = selected_car_index % car_amount
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
 
-        car.move(frame)
-
-        if cam_mode == 1:
-            cam.move()
-        else:
-            cam.x_speed = 0
-            cam.y_speed = 0
-            cam.x, cam.y = car.x, car.y
-
-        car.calc_rays(roads)
-        car.calc_distance_to_middle(roads)
-
-        if car.rays[0].intersections % 2 == 0:
-            debug_info.append("Niet op de weg!!!")
+        selected_car = cars[selected_car_index]
 
         # maak scherm grijs
         screen.fill((100, 100, 110))
 
         for road in roads:
             road.draw(screen, cam)
-        car.draw(screen, cam)
+
+        for car in cars:
+            debug_info.append("")
+            debug_info.append(f"AUTO {cars.index(car) + 1}")
+            car.move(frame, cars, selected_car_index)
+
+            car.calc_rays(roads)
+            car.calc_distance_to_middle(roads)
+
+            if car.rays[0].intersections % 2 == 0:
+                debug_info.append("Niet op de weg!!!")
+
+            car.draw(screen, cam)
+
+        if loose_cam:
+            cam.move()
+        else:
+            cam.x_speed = 0
+            cam.y_speed = 0
+            cam.x, cam.y = selected_car.x, selected_car.y
 
         if debug_mode > 1:
             draw_text(debug_info, screen)
@@ -299,7 +315,7 @@ class Car:
         self.angle += angle
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
-    def move(self, frame):
+    def move(self, frame, cars, selected_car_index):
         self.speed *= 0.97
         acceleration = 0.6
 
@@ -318,19 +334,20 @@ class Car:
             self.angle += rotation * steering
             self.speed += acceleration * gas
 
-        active_keys = pygame.key.get_pressed()
-        if active_keys[pygame.K_a]:
-            self.angle += rotation
-        if active_keys[pygame.K_d]:
-            self.angle -= rotation
-        if active_keys[pygame.K_w]:
-            self.speed += acceleration
-        if active_keys[pygame.K_s]:
-            self.speed -= acceleration
-        if active_keys[pygame.K_SPACE]:
-            self.x = 0
-            self.y = 0
-            self.speed = 0
+        if cars.index(self) == selected_car_index:
+            active_keys = pygame.key.get_pressed()
+            if active_keys[pygame.K_a]:
+                self.angle += rotation
+            if active_keys[pygame.K_d]:
+                self.angle -= rotation
+            if active_keys[pygame.K_w]:
+                self.speed += acceleration
+            if active_keys[pygame.K_s]:
+                self.speed -= acceleration
+            if active_keys[pygame.K_SPACE]:
+                self.x = 0
+                self.y = 0
+                self.speed = 0
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1
 
@@ -383,8 +400,6 @@ class Car:
                             ray.intersection = min(ray.intersection, f_ray)
                             ray.intersections += 1
                             ray.distance = ray.intersection * ray.length
-                            if debug_mode == 3:
-                                add_rounded_debug_info("Distance: ", ray.distance)
 
     def calc_distance_to_middle(self, roads: list[Road]):
         self.middle_point = None
@@ -426,8 +441,6 @@ class Car:
     # draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface, cam):
         screen_coords = world_to_screen((self.x, self.y), cam, screen)
-        add_rounded_debug_info("Screen X: ", screen_coords[0])
-        add_rounded_debug_info("Screen Y: ", screen_coords[1])
         image, rect = rotate_image(self.image, math.degrees(self.movement_angle), screen_coords)
         screen.blit(image, rect)
 
