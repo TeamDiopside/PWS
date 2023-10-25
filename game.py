@@ -8,7 +8,7 @@ import neural_network
 
 debug_info: list[str] = []
 debug_mode = 4
-cam_mode = 1
+cam_mode = 2
 
 
 def main():
@@ -141,6 +141,8 @@ class Camera:
         if active_keys[pygame.K_SPACE]:
             self.x = 0
             self.y = 0
+            self.x_speed = 0
+            self.y_speed = 0
 
         self.x_speed *= 0.95
         self.y_speed *= 0.95
@@ -150,7 +152,6 @@ class Camera:
 
         add_rounded_debug_info("Cam X: ", self.x)
         add_rounded_debug_info("Cam Y: ", self.y)
-
 
 
 # dit moet boven de Car class want anders werkt die niet, deze class moet dus eerder in de file staan
@@ -301,8 +302,9 @@ class Car:
         if active_keys[pygame.K_s]:
             self.speed -= acceleration
         if active_keys[pygame.K_SPACE]:
-            self.x = screen.get_rect().width * 0.5
-            self.y = screen.get_rect().height * 0.5
+            self.x = 0
+            self.y = 0
+            self.speed = 0
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1
 
