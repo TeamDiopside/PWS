@@ -32,7 +32,7 @@ def main():
     for i in range(car_amount):
         cars.append(Car(0, 0.3, math.pi * -0.5, 0))
 
-    cam = Camera(0, 0)
+    cam = Camera(0, 0.001)
 
     roads = create_roads()
 
@@ -66,8 +66,9 @@ def main():
         # maak scherm grijs
         screen.fill((100, 100, 110))
 
-        for road in roads:
+        for i, road in enumerate(roads):
             road.draw(screen, cam)
+            road.draw_middle(screen, cam, abs(2 * i / len(roads) - 1))
 
         for car in cars:
             debug_info.append("")
@@ -135,6 +136,8 @@ class Camera:
         self.y = y
         self.x_speed = 0
         self.y_speed = 0
+        self.x_mouse_down = 0
+        self.y_mouse_down = 0
 
     def move(self):
         acceleration = 1
@@ -153,6 +156,12 @@ class Camera:
             self.y = 0
             self.x_speed = 0
             self.y_speed = 0
+
+        new_mouse_x, new_mouse_y = pygame.mouse.get_pos()
+        if pygame.mouse.get_pressed()[0]:
+            self.x -= new_mouse_x - self.x_mouse_down
+            self.y -= new_mouse_y - self.y_mouse_down
+        self.x_mouse_down, self.y_mouse_down = new_mouse_x, new_mouse_y
 
         self.x_speed *= 0.95
         self.y_speed *= 0.95
@@ -277,9 +286,10 @@ class Road:
                 pygame.draw.line(screen, (240, 20, 50), world_to_screen((edge[0], edge[1]), cam, screen),
                                  world_to_screen((edge[2], edge[3]), cam, screen), 5)
 
+    def draw_middle(self, screen, cam, color):
         if debug_mode == 4:
             for middle_line in self.middle_lines:
-                pygame.draw.line(screen, (0, 100, 150),
+                pygame.draw.line(screen, (0, 200 * color, 150),
                                  world_to_screen((middle_line[0], middle_line[1]), cam, screen),
                                  world_to_screen((middle_line[2], middle_line[3]), cam, screen), 5)
 
