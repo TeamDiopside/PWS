@@ -32,12 +32,12 @@ def main():
     frame = 1
 
     # Maak auto's
-    car_amount = 1
+    car_amount = 10
     cars: list[Car] = []
     selected_car_index = 0
 
     for i in range(car_amount):
-        cars.append(Car(0, 0.3, math.pi * -0.5, 0))
+        cars.append(Car(150, 0.3, math.pi * -0.5, 0))
 
     cam = Camera(0, 0.001)
 
@@ -75,13 +75,17 @@ def main():
         for car in cars:
             debug_info.append("")
             debug_info.append(f"AUTO {cars.index(car) + 1}")
-            car.move(frame, cars, selected_car_index)
 
-            car.calc_rays(roads)
-            car.calc_distance_to_middle(roads)
+            if car.on_road:
+                car.move(frame, cars, selected_car_index)
+                car.calc_rays(roads)
 
-            if car.rays[0].intersections % 2 == 0:
+                if car.rays[0].intersections % 2 == 0:
+                    car.on_road = False
+                    car.calc_distance_to_finish(roads)
+            else:
                 debug_info.append("Niet op de weg!!!")
+                debug_info.append(f"Distance: {car.distance_to_finish}")
 
         if loose_cam:
             cam.move()
@@ -102,6 +106,8 @@ def main():
         for car in cars:
             car.draw(screen, cam)
 
+        selected_car.draw_debug(screen, cam)
+
         if debug_mode > 1:
             draw_text(debug_info, screen)
 
@@ -113,7 +119,7 @@ def main():
 
 def create_roads():
     roads: list[Road] = []
-    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
+    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s"]
     x, y = 0, 0
     direction = 0
     size = 200
@@ -326,10 +332,13 @@ class Car:
         self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = angle
         self.middle_point: Vector = Vector(0, 0)
+        self.middle_segment = (0, 0, 0)
+        self.distance_to_finish = 0
+        self.on_road = True
 
         # van 0 tot 360 met stappen van 10 (in een cirkel rond de auto dus)
         self.rays: list[Ray] = []
-        for ray_angle in range(0, 360, 10):
+        for ray_angle in range(180, 361, 30):
             self.rays.append(Ray(ray_angle))
 
     def rotate(self, angle):
@@ -416,11 +425,11 @@ class Car:
                             ray.intersections += 1
                             ray.distance = ray.intersection * ray.length
 
-    def calc_distance_to_middle(self, roads: list[Road]):
+    def calc_distance_to_finish(self, roads: list[Road]):
         self.middle_point = None
 
-        for road in roads:
-            for middle_line in road.middle_lines:
+        for i, road in enumerate(roads):
+            for j, middle_line in enumerate(road.middle_lines):
 
                 m1 = Vector(middle_line[0], middle_line[1])
                 m2 = Vector(middle_line[2], middle_line[3])
@@ -442,8 +451,10 @@ class Car:
                             new_distance = (p1 - ints).length()
                             if new_distance < distance:
                                 self.middle_point = ints
+                                self.middle_segment = (i, j, f_middle)
                         else:
                             self.middle_point = ints
+                            self.middle_segment = (i, j, f_middle)
                     else:
                         # De kortste afstand zit op een hoekpunt
                         new_distance1 = (p1 - m1).length()
@@ -452,14 +463,21 @@ class Car:
                         if self.middle_point is not None:
                             if (p1 - closest).length() < (p1 - self.middle_point).length():
                                 self.middle_point = closest
+                                self.middle_segment = (i, j, 0 if closest == m1 else 1)
                         else:
                             self.middle_point = closest
+                            self.middle_segment = (i, j, 0 if closest == m1 else 1)
+
+        self.distance_to_finish = (self.middle_segment[0] + 0.5 * self.middle_segment[1] + self.middle_segment[2]) / len(roads)
 
     # draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface, cam):
         screen_coords = world_to_screen((self.pos.x, self.pos.y), cam, screen)
         image, rect = rotate_image(self.image, math.degrees(self.movement_angle), screen_coords)
         screen.blit(image, rect)
+
+    def draw_debug(self, screen: pygame.surface.Surface, cam):
+        screen_coords = world_to_screen((self.pos.x, self.pos.y), cam, screen)
 
         if debug_mode == 3:
             for ray in self.rays:
@@ -471,7 +489,7 @@ class Car:
                     pygame.draw.circle(screen, ray_color, (snijpunt_x, snijpunt_y), 5)
                     pygame.draw.line(screen, ray_color, screen_coords, (snijpunt_x, snijpunt_y))
 
-        if debug_mode == 4 and self.middle_point is not None:
+        if debug_mode == 4 and self.middle_point is not None and not self.on_road:
             pygame.draw.line(screen, middle_line_color, screen_coords, world_vec_to_screen(self.middle_point, cam, screen), 3)
             pygame.draw.circle(screen, middle_line_color, world_vec_to_screen(self.middle_point, cam, screen), 5)
             pygame.draw.circle(screen, middle_line_color, world_to_screen((self.pos.x, self.pos.y), cam, screen), 5)

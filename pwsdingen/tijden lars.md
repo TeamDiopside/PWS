@@ -35,5 +35,6 @@
 | 20/10 | 11:30 - 12:40 | 1:10 |                      Middellijn drama                       |
 | 25/10 | 14:05 - 16:40 | 2:35 |              Middellijn, camera mode 1 bewegen              |
 | 25/10 | 22:00 - 23:30 | 1:30 |                   Meer met vectoren doen                    |
+| 27/10 | 20:05 - 21:15 | 1:10 |         Afstand tot finish berekenen en minder rays         |
 
-Totaal: 42:10
+Totaal: 43:20

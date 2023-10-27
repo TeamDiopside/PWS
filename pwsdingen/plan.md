@@ -2,13 +2,13 @@
 - Simulatie
   - ~~Afstand tot muren detecteren (Ray casting/marching?)~~
   - ~~Collision detection~~
-  - Meerdere auto's tegelijk
+  - ~~Meerdere auto's tegelijk~~
   - Snelheid van simulatie aanpassen
   - ~~Camera tussen vast en auto volgen kunnen switchen~~
-  - Afstand tot finish detecteren
+  - ~~Afstand tot finish detecteren~~
     - ~~Punt dat het dichtst bij het midden van de weg zit vinden~~
-  - Alles naar vectoren veranderen
-  - Schuine wegen
+  - ~~Alles naar vectoren veranderen~~
+  - Performance verbeteren
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
   - De weights elke generatie een beetje aanpassen
@@ -23,3 +23,4 @@
 
 ## Misschien
 - Track generaten
+- Schuine wegen
