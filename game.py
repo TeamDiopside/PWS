@@ -32,12 +32,12 @@ def main():
     frame = 1
 
     # Maak auto's
-    car_amount = 10
+    car_amount = 12
     cars: list[Car] = []
     selected_car_index = 0
 
     for i in range(car_amount):
-        cars.append(Car(150, 0.3, math.pi * -0.5, 0))
+        cars.append(Car(200, 50.3 - 10 * i, math.pi * -0.5, 0))
 
     cam = Camera(0, 0.001)
 
@@ -119,7 +119,8 @@ def main():
 
 def create_roads():
     roads: list[Road] = []
-    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s"]
+    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
+    # built_in_map = ["s"]
     x, y = 0, 0
     direction = 0
     size = 200
@@ -397,6 +398,9 @@ class Car:
             ray.can_draw = False
             ray.intersections = 0
 
+            # Meedraaien met de auto
+            ray.angle = math.radians(ray.initial_angle) - self.movement_angle
+
             for road in roads:
 
                 for edge in road.edges:
@@ -404,26 +408,17 @@ class Car:
                     e1 = Vector(edge[0], edge[1])
                     e2 = Vector(edge[2], edge[3])
 
-                    # Meedraaien met de auto
-                    ray.angle = math.radians(ray.initial_angle) - self.movement_angle
-
                     # Bereken het eindpunt van de ray op basis van de lengte en de hoek
                     r1 = self.pos
                     r2 = Vector(self.pos.x + ray.length * math.cos(ray.angle), self.pos.y + ray.length * math.sin(ray.angle))
 
-                    cross_product = (r1 - r2) * (e1 - e2)
+                    f_ray, f_muur, parallel = intersection(r1, r2, e1, e2)
 
-                    if cross_product != 0:
-                        # het punt op de lijn waar het snijpunt ligt (tussen 0 en 1)
-                        f_ray = (r1 - e1) * (e1 - e2) / cross_product
-                        # het punt op de muur (tussen 0 en 1)
-                        f_muur = (r1 - e1) * (r1 - r2) / cross_product
-
-                        if 0 <= f_ray and 0 <= f_muur <= 1:
-                            ray.can_draw = True
-                            ray.intersection = min(ray.intersection, f_ray)
-                            ray.intersections += 1
-                            ray.distance = ray.intersection * ray.length
+                    if 0 <= f_ray and 0 <= f_muur <= 1 and not parallel:
+                        ray.can_draw = True
+                        ray.intersection = min(ray.intersection, f_ray)
+                        ray.intersections += 1
+                        ray.distance = ray.intersection * ray.length
 
     def calc_distance_to_finish(self, roads: list[Road]):
         self.middle_point = None
@@ -496,6 +491,18 @@ class Car:
 
     def __str__(self):
         return f"Car at ({round(self.pos.x)}, {round(self.pos.y)})"
+
+
+def intersection(a1, a2, b1, b2):
+    cross = (b1.x - b2.x) * (a1.y - a2.y) - (b1.y - b2.y) * (a1.x - a2.x)
+    if cross is not None:
+        mpx = b1.x - a1.x
+        mpy = b1.y - a1.y
+        f_a = (mpx * (b1.y - b2.y) - mpy * (b1.x - b2.x)) / cross
+        f_b = (mpx * (a1.y - a2.y) - mpy * (a1.x - a2.x)) / cross
+        return f_a, f_b, False
+    else:
+        return 0, 0, True
 
 
 class Ray:

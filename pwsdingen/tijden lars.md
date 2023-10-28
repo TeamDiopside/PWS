@@ -36,5 +36,7 @@
 | 25/10 | 14:05 - 16:40 | 2:35 |              Middellijn, camera mode 1 bewegen              |
 | 25/10 | 22:00 - 23:30 | 1:30 |                   Meer met vectoren doen                    |
 | 27/10 | 20:05 - 21:15 | 1:10 |         Afstand tot finish berekenen en minder rays         |
+| 28/10 | 12:25 - 13:15 | 0:50 |                         Performance                         |
+| 28/10 | 14:05 - 15:00 | 0:55 | Performance upgrades door ray berekeningen te optimaliseren |
 
-Totaal: 43:20
+Totaal: 45:05

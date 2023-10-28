@@ -8,7 +8,7 @@
   - ~~Afstand tot finish detecteren~~
     - ~~Punt dat het dichtst bij het midden van de weg zit vinden~~
   - ~~Alles naar vectoren veranderen~~
-  - Performance verbeteren
+  - ~~Performance verbeteren~~
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
   - De weights elke generatie een beetje aanpassen
