@@ -7,7 +7,7 @@ import pygame
 import neural_network
 
 debug_info: list[str] = []
-debug_mode = 4
+debug_mode = 2
 loose_cam = False
 
 background_color = (100, 100, 110)
@@ -32,12 +32,12 @@ def main():
     frame = 1
 
     # Maak auto's
-    car_amount = 12
+    car_amount = 1
     cars: list[Car] = []
     selected_car_index = 0
 
     for i in range(car_amount):
-        cars.append(Car(200, 50.3 - 10 * i, math.pi * -0.5, 0))
+        cars.append(Car(200, 50.3 - 10 * i, math.pi * -0.5, 0, False))
 
     cam = Camera(0, 0.001)
 
@@ -81,7 +81,7 @@ def main():
                 car.move(frame, cars, selected_car_index, delta_time)
                 car.calc_rays(roads)
 
-                if car.rays[0].intersections % 2 == 0:
+                if car.rays[0].intersections % 2 == 0 and car.is_mortal:
                     car.on_road = False
                     car.calc_distance_to_finish(roads)
             else:
@@ -327,7 +327,8 @@ def rotate_vector(vector, angle):
 
 
 class Car:
-    def __init__(self, x, y, angle, speed):
+    def __init__(self, x, y, angle, speed, mortal):
+        self.is_mortal = mortal
         self.pos = Vector(x, y)
         self.angle: float = angle
         self.speed: float = speed
@@ -343,18 +344,21 @@ class Car:
         for ray_angle in range(180, 361, 30):
             self.rays.append(Ray(ray_angle))
 
-    def rotate(self, angle):
-        self.angle += angle
-
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
     def move(self, frame, cars, selected_car_index, delta_time):
         self.speed *= 0.97
         acceleration = 0.6
 
-        resistance = acceleration * 7.77
-        sensitivity = acceleration * 0.14
-        max_rotation = acceleration * 0.04
-        rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation) * delta_time
+        # de kleine afstand die je in deze frame kan draaien, gebaseerd op hoe snel je gaat
+        d_rotation = 0
+        if self.speed != 0:
+            x = 0.08 * abs(self.speed) - 1
+            d_rotation = delta_time * 0.05 * (1 - x * x)
+
+        if self.speed < 0:
+            d_rotation = -d_rotation
+
+        debug_info.append(f"dr: {d_rotation}")
 
         ai_enabled = False
         if ai_enabled:
@@ -363,15 +367,15 @@ class Car:
             gas = network[1] * 2 - 1
             print(network)
 
-            self.angle += rotation * steering
+            self.angle += d_rotation * steering
             self.speed += acceleration * gas
 
-        if cars.index(self) == selected_car_index:
+        if cars.index(self) == selected_car_index and not ai_enabled:
             active_keys = pygame.key.get_pressed()
             if active_keys[pygame.K_a]:
-                self.angle += rotation
+                self.angle += d_rotation
             if active_keys[pygame.K_d]:
-                self.angle -= rotation
+                self.angle -= d_rotation
             if active_keys[pygame.K_w]:
                 self.speed += acceleration
             if active_keys[pygame.K_s]:
