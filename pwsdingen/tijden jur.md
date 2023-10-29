@@ -31,5 +31,6 @@
 | 27/10 | 20:20 - 21:15 | 0:55 |             Afstand tot finish berekenen en minder rays              |
 | 28/10 | 14:15 - 15:00 | 0:45 |     Performance upgrades door ray berekeningen te optimaliseren      |
 | 29/10 | 12:10 - 14:45 | 2:35 | Mislukte poging tot multithreading, delta time en draaien verbeteren |
+| 29/10 | 20:10 - 20:40 | 0:30 |  Progressiedocument bijwerken en bat bestandje voor De Kogel maken   |
 
-Totaal: 43:05
+Totaal: 43:35
