@@ -44,6 +44,7 @@ def main():
     roads = create_roads()
 
     while running:
+        delta_time = clock.get_time() / 16.6667
 
         # --- UPDATE ---
 
@@ -77,7 +78,7 @@ def main():
             debug_info.append(f"AUTO {cars.index(car) + 1}")
 
             if car.on_road:
-                car.move(frame, cars, selected_car_index)
+                car.move(frame, cars, selected_car_index, delta_time)
                 car.calc_rays(roads)
 
                 if car.rays[0].intersections % 2 == 0:
@@ -346,14 +347,14 @@ class Car:
         self.angle += angle
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
-    def move(self, frame, cars, selected_car_index):
+    def move(self, frame, cars, selected_car_index, delta_time):
         self.speed *= 0.97
         acceleration = 0.6
 
         resistance = acceleration * 7.77
         sensitivity = acceleration * 0.14
         max_rotation = acceleration * 0.04
-        rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation)
+        rotation = numpy.fmin(sensitivity * self.speed / numpy.fmax(abs(self.speed ** 1.5), resistance), max_rotation) * delta_time
 
         ai_enabled = False
         if ai_enabled:
@@ -381,8 +382,8 @@ class Car:
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1
 
-        self.pos.x += -math.sin(self.movement_angle) * self.speed
-        self.pos.y += -math.cos(self.movement_angle) * self.speed
+        self.pos.x += -math.sin(self.movement_angle) * self.speed * delta_time
+        self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time
 
         add_rounded_debug_info("Snelheid: ", self.speed)
         add_rounded_debug_info("Hoek: ", self.angle)
