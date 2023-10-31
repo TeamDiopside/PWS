@@ -41,5 +41,6 @@
 | 29/10 | 12:15 - 14:55 | 2:40 | Mislukte poging tot multithreading, delta time en draaien verbeteren |
 | 31/10 | 15:15 - 15:30 | 0:15 |                       Bijkletsen met De Kogel                        |
 | 31/10 | 17:10 - 19:05 | 1:55 |                         Hoofd en deelvragen                          |
+| 31/10 | 21:40 - 22:30 | 0:50 |                                                                      |
 
-Totaal: 49:55
+Totaal: 50:45
