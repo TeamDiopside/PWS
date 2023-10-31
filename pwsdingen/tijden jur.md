@@ -32,5 +32,7 @@
 | 28/10 | 14:15 - 15:00 | 0:45 |     Performance upgrades door ray berekeningen te optimaliseren      |
 | 29/10 | 12:10 - 14:45 | 2:35 | Mislukte poging tot multithreading, delta time en draaien verbeteren |
 | 29/10 | 20:10 - 20:40 | 0:30 |  Progressiedocument bijwerken en bat bestandje voor De Kogel maken   |
+| 31/10 | 15:15 - 15:30 | 0:15 |                       Bijkletsen met De Kogel                        |
+| 31/10 | 17:10 - 19:05 | 1:55 |                         Hoofd en deelvragen                          |
 
-Totaal: 43:35
+Totaal: 45:45
