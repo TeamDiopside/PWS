@@ -61,6 +61,8 @@ def main():
                     debug_mode = 3
                 if event.key == pygame.K_4:
                     debug_mode = 4
+                if event.key == pygame.K_5:
+                    debug_mode = 5
                 if event.key == pygame.K_e:
                     loose_cam = not loose_cam
                 if event.key == pygame.K_LEFTBRACKET:
@@ -346,7 +348,7 @@ class Car:
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
     def move(self, frame, cars, selected_car_index, delta_time):
-        self.speed *= 0.97
+        self.speed *= 0.97 ** delta_time
         acceleration = 0.6
 
         # de kleine afstand die je in deze frame kan draaien, gebaseerd op hoe snel je gaat
@@ -357,8 +359,6 @@ class Car:
 
         if self.speed < 0:
             d_rotation = -d_rotation
-
-        debug_info.append(f"dr: {d_rotation}")
 
         ai_enabled = False
         if ai_enabled:
@@ -377,14 +377,14 @@ class Car:
             if active_keys[pygame.K_d]:
                 self.angle -= d_rotation
             if active_keys[pygame.K_w]:
-                self.speed += acceleration
+                self.speed += acceleration * delta_time
             if active_keys[pygame.K_s]:
-                self.speed -= acceleration
+                self.speed -= acceleration * delta_time
             if active_keys[pygame.K_SPACE]:
                 self.pos = Vector(0, 0)
                 self.speed = 0
 
-        self.movement_angle += (self.angle - self.movement_angle) * 0.1
+        self.movement_angle += (self.angle - self.movement_angle) * 0.1 * delta_time
 
         self.pos.x += -math.sin(self.movement_angle) * self.speed * delta_time
         self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time
@@ -493,6 +493,12 @@ class Car:
             pygame.draw.line(screen, middle_line_color, screen_coords, world_vec_to_screen(self.middle_point, cam, screen), 3)
             pygame.draw.circle(screen, middle_line_color, world_vec_to_screen(self.middle_point, cam, screen), 5)
             pygame.draw.circle(screen, middle_line_color, world_to_screen((self.pos.x, self.pos.y), cam, screen), 5)
+
+        if debug_mode == 5:
+            pygame.draw.line(screen, middle_line_color, world_vec_to_screen(self.pos, cam, screen), world_to_screen(
+                (-math.sin(self.angle) * 150 + self.pos.x, -math.cos(self.angle) * 150 + self.pos.y), cam, screen), 3)
+            pygame.draw.line(screen, ray_color, world_vec_to_screen(self.pos, cam, screen), world_to_screen(
+                (-math.sin(self.movement_angle) * 150 + self.pos.x, -math.cos(self.movement_angle) * 150 + self.pos.y), cam, screen), 3)
 
     def __str__(self):
         return f"Car at ({round(self.pos.x)}, {round(self.pos.y)})"
