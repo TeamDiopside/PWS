@@ -18,7 +18,11 @@ text_color = (255, 255, 255)
 text_bg_color = (30, 30, 30)
 
 
-def main():
+def start():
+    game(int(input("Amount of cars: ")))
+
+
+def game(car_amount):
     global debug_mode, loose_cam
     pygame.init()
 
@@ -32,7 +36,6 @@ def main():
     frame = 1
 
     # Maak auto's
-    car_amount = 1
     cars: list[Car] = []
     selected_car_index = 0
 
@@ -415,7 +418,8 @@ class Car:
 
                     # Bereken het eindpunt van de ray op basis van de lengte en de hoek
                     r1 = self.pos
-                    r2 = Vector(self.pos.x + ray.length * math.cos(ray.angle), self.pos.y + ray.length * math.sin(ray.angle))
+                    r2 = Vector(self.pos.x + ray.length * math.cos(ray.angle),
+                                self.pos.y + ray.length * math.sin(ray.angle))
 
                     f_ray, f_muur, parallel = intersection(r1, r2, e1, e2)
 
@@ -468,7 +472,8 @@ class Car:
                             self.middle_point = closest
                             self.middle_segment = (i, j, 0 if closest == m1 else 1)
 
-        self.distance_to_finish = (self.middle_segment[0] + 0.5 * self.middle_segment[1] + self.middle_segment[2]) / len(roads)
+        self.distance_to_finish = (self.middle_segment[0] + 0.5 * self.middle_segment[1] + self.middle_segment[
+            2]) / len(roads)
 
     # draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface, cam):
@@ -490,7 +495,8 @@ class Car:
                     pygame.draw.line(screen, ray_color, screen_coords, (snijpunt_x, snijpunt_y))
 
         if debug_mode == 4 and self.middle_point is not None and not self.on_road:
-            pygame.draw.line(screen, middle_line_color, screen_coords, world_vec_to_screen(self.middle_point, cam, screen), 3)
+            pygame.draw.line(screen, middle_line_color, screen_coords,
+                             world_vec_to_screen(self.middle_point, cam, screen), 3)
             pygame.draw.circle(screen, middle_line_color, world_vec_to_screen(self.middle_point, cam, screen), 5)
             pygame.draw.circle(screen, middle_line_color, world_to_screen((self.pos.x, self.pos.y), cam, screen), 5)
 
@@ -498,7 +504,8 @@ class Car:
             pygame.draw.line(screen, middle_line_color, world_vec_to_screen(self.pos, cam, screen), world_to_screen(
                 (-math.sin(self.angle) * 150 + self.pos.x, -math.cos(self.angle) * 150 + self.pos.y), cam, screen), 3)
             pygame.draw.line(screen, ray_color, world_vec_to_screen(self.pos, cam, screen), world_to_screen(
-                (-math.sin(self.movement_angle) * 150 + self.pos.x, -math.cos(self.movement_angle) * 150 + self.pos.y), cam, screen), 3)
+                (-math.sin(self.movement_angle) * 150 + self.pos.x, -math.cos(self.movement_angle) * 150 + self.pos.y),
+                cam, screen), 3)
 
     def __str__(self):
         return f"Car at ({round(self.pos.x)}, {round(self.pos.y)})"
@@ -561,4 +568,5 @@ def clear_debug_info():
 
 
 if __name__ == '__main__':
-    main()
+    start()
+    # game(1)

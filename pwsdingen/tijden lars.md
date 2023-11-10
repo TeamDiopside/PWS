@@ -43,5 +43,6 @@
 | 31/10 | 17:10 - 19:05 | 1:55 |                         Hoofd- en deelvragen                         |
 | 31/10 | 21:40 - 22:30 | 0:50 |  Meer over hoofd- en deelvragen en nadenken over de neural network   |
 | 3/11  | 18:25 - 19:00 | 0:35 |           Delta time fixen en movement angle herontdekken            |
+| 10/11 | 11:40 - 12:00 | 0:20 |                          Inputsysteem maken                          |
 
 Totaal: 51:20
