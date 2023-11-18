@@ -34,5 +34,6 @@
 | 29/10 | 20:10 - 20:40 | 0:30 |  Progressiedocument bijwerken en bat bestandje voor De Kogel maken   |
 | 31/10 | 15:15 - 15:30 | 0:15 |                       Bijkletsen met De Kogel                        |
 | 31/10 | 17:10 - 19:05 | 1:55 |                         Hoofd en deelvragen                          |
+| 18/11 | 21:00 - 23:45 | 2:45 |                 Training- en generatiesysteem maken                  |
 
-Totaal: 45:45
+Totaal: 48:30

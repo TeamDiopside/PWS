@@ -10,6 +10,7 @@
   - ~~Alles naar vectoren veranderen~~
   - ~~Performance verbeteren~~
   - ~~Draaien verbeteren~~
+  - Movement bij verschillende FPS fixen
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
   - De weights elke generatie een beetje aanpassen

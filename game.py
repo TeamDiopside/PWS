@@ -1,10 +1,9 @@
 import math
-import random
 
 import numpy
 import pygame
 
-import neural_network
+import network
 
 debug_info: list[str] = []
 debug_mode = 2
@@ -19,10 +18,14 @@ text_bg_color = (30, 30, 30)
 
 
 def start():
-    game(int(input("Amount of cars: ")))
+    amount = int(input("Amount of cars: "))
+    name = input("Generation name: ")
+    generation = int(input("Generation: "))
+    weights, biases = network.get_network_from_file(name, generation)
+    game(amount, weights, biases, name, generation)
 
 
-def game(car_amount):
+def game(car_amount, starting_weights, starting_biases, name, generation):
     global debug_mode, loose_cam
     pygame.init()
 
@@ -36,11 +39,8 @@ def game(car_amount):
     frame = 1
 
     # Maak auto's
-    cars: list[Car] = []
+    cars: list[Car] = create_cars(car_amount, starting_weights, starting_biases)
     selected_car_index = 0
-
-    for i in range(car_amount):
-        cars.append(Car(200, 50.3 - 10 * i, math.pi * -0.5, 0, False))
 
     cam = Camera(0, 0.001)
 
@@ -78,20 +78,31 @@ def game(car_amount):
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
 
+        alive_cars = len(cars)
         for car in cars:
             debug_info.append("")
             debug_info.append(f"AUTO {cars.index(car) + 1}")
 
             if car.on_road:
-                car.move(frame, cars, selected_car_index, delta_time)
                 car.calc_rays(roads)
+                car.move(cars, selected_car_index, delta_time)
 
                 if car.rays[0].intersections % 2 == 0 and car.is_mortal:
                     car.on_road = False
                     car.calc_distance_to_finish(roads)
             else:
+                alive_cars -= 1
                 debug_info.append("Niet op de weg!!!")
-                debug_info.append(f"Distance: {car.distance_to_finish}")
+                debug_info.append(f"Distance: {car.distance_traveled}")
+
+        if alive_cars <= 0:
+            best_car = cars[0]
+            for car in cars:
+                if car.distance_traveled > best_car.distance_traveled:
+                    best_car = car
+            cars = create_cars(car_amount, best_car.weights, best_car.biases)
+            generation += 1
+            network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
 
         if loose_cam:
             cam.move()
@@ -121,6 +132,21 @@ def game(car_amount):
         frame += 1
         pygame.display.update()
         clock.tick()
+
+
+def create_cars(amount, weights, biases):
+    def get_car(w, b):
+        return Car(200, 50.3, math.pi * -0.5, 0, True, w, b)
+
+    cars = [get_car(weights, biases)]
+
+    for i in range(amount - 1):
+        cars.append(get_car(
+            network.change_weights(weights, 0.1),
+            network.change_biases(biases, 0.1))
+        )
+
+    return cars
 
 
 def create_roads():
@@ -332,7 +358,9 @@ def rotate_vector(vector, angle):
 
 
 class Car:
-    def __init__(self, x, y, angle, speed, mortal):
+    def __init__(self, x, y, angle, speed, mortal, weights, biases):
+        self.weights = weights
+        self.biases = biases
         self.is_mortal = mortal
         self.pos = Vector(x, y)
         self.angle: float = angle
@@ -341,7 +369,7 @@ class Car:
         self.movement_angle = angle
         self.middle_point: Vector = Vector(0, 0)
         self.middle_segment = (0, 0, 0)
-        self.distance_to_finish = 0
+        self.distance_traveled = 0
         self.on_road = True
 
         # van 0 tot 360 met stappen van 10 (in een cirkel rond de auto dus)
@@ -350,7 +378,7 @@ class Car:
             self.rays.append(Ray(ray_angle))
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
-    def move(self, frame, cars, selected_car_index, delta_time):
+    def move(self, cars, selected_car_index, delta_time):
         self.speed *= 0.97 ** delta_time
         acceleration = 0.6
 
@@ -363,15 +391,17 @@ class Car:
         if self.speed < 0:
             d_rotation = -d_rotation
 
-        ai_enabled = False
+        ai_enabled = True
         if ai_enabled:
-            network = neural_network.main([random.random() * 2 - 1, random.random() * 2 - 1], frame)
-            steering = network[0] * 2 - 1
-            gas = network[1] * 2 - 1
-            print(network)
+            inputs = [self.speed, self.movement_angle]
+            for ray in self.rays:
+                inputs.append(ray.length)
+            outputs = network.calculate(self.weights, self.biases, inputs)
+            steering = outputs[0] * 2 - 1
+            gas = outputs[1] * 2 - 1
 
             self.angle += d_rotation * steering
-            self.speed += acceleration * gas
+            self.speed += acceleration * -gas
 
         if cars.index(self) == selected_car_index and not ai_enabled:
             active_keys = pygame.key.get_pressed()
@@ -388,6 +418,7 @@ class Car:
                 self.speed = 0
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1 * delta_time
+        # self.movement_angle = self.angle
 
         self.pos.x += -math.sin(self.movement_angle) * self.speed * delta_time
         self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time
@@ -472,7 +503,7 @@ class Car:
                             self.middle_point = closest
                             self.middle_segment = (i, j, 0 if closest == m1 else 1)
 
-        self.distance_to_finish = (self.middle_segment[0] + 0.5 * self.middle_segment[1] + self.middle_segment[
+        self.distance_traveled = (self.middle_segment[0] + 0.5 * self.middle_segment[1] + self.middle_segment[
             2]) / len(roads)
 
     # draw past veranderingen van move toe op het scherm
@@ -513,7 +544,7 @@ class Car:
 
 def intersection(a1, a2, b1, b2):
     cross = (b1.x - b2.x) * (a1.y - a2.y) - (b1.y - b2.y) * (a1.x - a2.x)
-    if cross is not None:
+    if cross != 0:
         mpx = b1.x - a1.x
         mpy = b1.y - a1.y
         f_a = (mpx * (b1.y - b2.y) - mpy * (b1.x - b2.x)) / cross
@@ -529,7 +560,7 @@ class Ray:
         self.initial_angle = angle
         self.intersection = 1
         self.can_draw = False
-        self.length = 10_000_000_000
+        self.length = 1
         self.distance = 0
         self.intersections = 0
 
@@ -569,4 +600,4 @@ def clear_debug_info():
 
 if __name__ == '__main__':
     start()
-    # game(1)
+    # game(3, "alpha", 0)
