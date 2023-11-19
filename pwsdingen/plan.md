@@ -11,6 +11,7 @@
   - ~~Performance verbeteren~~
   - ~~Draaien verbeteren~~
   - Movement bij verschillende FPS fixen
+  - Randen optimaliseren
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
   - ~~De weights elke generatie een beetje aanpassen~~

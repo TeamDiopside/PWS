@@ -17,6 +17,9 @@ middle_line_color = (20, 200, 250)
 text_color = (255, 255, 255)
 text_bg_color = (30, 30, 30)
 
+max_change = 0.05
+max_time = 15
+
 
 def main():
     amount = int(input("Amount of cars: "))
@@ -43,7 +46,6 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
     running = True
     frame = 1
     gen_time = time.time()
-    max_time = 10
 
     # Maak auto's
     cars: list[Car] = create_cars(car_amount, starting_weights, starting_biases)
@@ -84,7 +86,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         selected_car = cars[selected_car_index]
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
-        debug_info.append(f"Generation: {generation}")
+        debug_info.append(f"Generation: {name} {generation}")
         add_rounded_debug_info(f"Time: ", time.time() - gen_time)
 
         selected_car.add_debug_text(selected_car_index)
@@ -106,9 +108,18 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         if alive_cars <= 0:
             gen_time = time.time()
             best_car = cars[0]
+            finished_cars = []
             for car in cars:
                 if car.distance_traveled > best_car.distance_traveled:
                     best_car = car
+                if car.distance_traveled > 0.99:
+                    car.finished_time = time.time()
+                    finished_cars.append(car)
+
+            for car in finished_cars:
+                if car.finished_time < best_car.finished_time:
+                    best_car = car
+
             cars = create_cars(car_amount, best_car.weights, best_car.biases)
             generation += 1
             network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
@@ -150,8 +161,8 @@ def create_cars(amount, weights, biases):
     cars = [get_car(weights, biases)]
 
     for i in range(amount - 1):
-        we = network.change_weights(weights, 0.07)
-        bi = network.change_biases(biases, 0.07)
+        we = network.change_weights(weights, max_change)
+        bi = network.change_biases(biases, max_change)
         cars.append(get_car(we, bi))
 
     return cars
@@ -159,8 +170,10 @@ def create_cars(amount, weights, biases):
 
 def create_roads():
     roads: list[Road] = []
-    built_in_map = ["b", "s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "e"]
-    # built_in_map = ["s"]
+    # built_in_map = "bslsrsrssssrsrlse"
+    # built_in_map = "bsslssrsssssrssssrsrlse"
+    built_in_map = "bssrsrssssrsssslsslsrssse"
+    # built_in_map = "bsssssssssssrsrslsssssse"
     x, y = 0, 0
     direction = 0
     size = 200
@@ -315,13 +328,15 @@ class Road:
         middle = []
         coords = []
 
-        if self.road_type == "r":
+        if self.road_type == "s" or self.road_type == "b":
+            coords.append((-1, 0, 1, 0))
+        elif self.road_type == "r":
             coords.append((0, 0, -1, 0))
             coords.append((0, 1, 0, 0))
-        elif self.road_type == "s":
-            coords.append((-1, 0, 1, 0))
         elif self.road_type == "l":
             coords.append((0, 0, 0, -1))
+            coords.append((-1, 0, 0, 0))
+        elif self.road_type == "e":
             coords.append((-1, 0, 0, 0))
 
         for pair in coords:
@@ -352,7 +367,7 @@ class Road:
         elif self.road_type == "b":
             image = pygame.transform.rotate(beginning_road, self.angle)
         elif self.road_type == "e":
-            image = pygame.transform.rotate(end_road, self.angle)
+            image = pygame.transform.rotate(end_road, -self.angle)
 
         screen.blit(image, image.get_rect(center=destination))
 
@@ -394,6 +409,7 @@ class Car:
         self.middle_segment = (0, 0, 0)
         self.distance_traveled = 0
         self.on_road = True
+        self.finished_time = 0
 
         # van 0 tot 360 met stappen van 10 (in een cirkel rond de auto dus)
         self.rays: list[Ray] = []
