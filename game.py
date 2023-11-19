@@ -156,7 +156,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         clear_debug_info()
         frame += 1
         pygame.display.update()
-        clock.tick()
+        clock.tick(20)
 
 
 def create_cars(amount, weights, biases):
@@ -179,6 +179,7 @@ def create_roads():
     built_in_map = "bsslssrsssssrssssrsrlse"
     # built_in_map = "bssrsrssssrsssslsslsrssse"
     # built_in_map = "bsssssssssssrsrslsssssse"
+    # built_in_map = "bsrslsslssssssssrsrsle"
     x, y = 0, 0
     direction = 0
     size = 200
