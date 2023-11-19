@@ -1,5 +1,4 @@
 import json
-import math
 import os
 import random
 
@@ -52,19 +51,27 @@ def calculate(all_weights, all_biases, inputs):
 
 
 def change_weights(all_weights: list[list[list]], max_change):
-    new_weights = all_weights.copy()
-    for x, a in enumerate(all_weights):
-        for y, b in enumerate(a):
-            for z, c in enumerate(b):
-                new_weights[x][y][z] = c + (random.random() * 2 - 1) * max_change
-    return all_weights
+    new_weights = []
+    for x in all_weights:
+        list1 = []
+        for y in x:
+            list2 = []
+            for z in y:
+                list2.append(z + (random.random() * 2 - 1) * max_change)
+            list1.append(list2)
+        new_weights.append(list1)
+
+    return new_weights
 
 
 def change_biases(all_biases, max_change):
-    for x, a in enumerate(all_biases):
-        for y, b in enumerate(a):
-            all_biases[x][y] = b + (random.random() * 2 - 1) * max_change
-    return all_biases
+    new_biases = []
+    for x in all_biases:
+        list1 = []
+        for y in x:
+            list1.append(y + (random.random() * 2 - 1) * max_change)
+        new_biases.append(list1)
+    return new_biases
 
 
 # weights naar json format veranderen en in een file zetten
@@ -86,7 +93,7 @@ def get_network_from_file(name, generation):
 
 
 def sigmoid(x):
-    return 1 / (1 + math.exp(-x))
+    return 1 / (1 + numpy.exp(-x))
 
 
 def test():

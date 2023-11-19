@@ -45,5 +45,6 @@
 | 3/11  | 18:25 - 19:00 | 0:35 |           Delta time fixen en movement angle herontdekken            |
 | 10/11 | 11:40 - 12:00 | 0:20 |                          Inputsysteem maken                          |
 | 18/11 | 21:00 - 23:45 | 2:45 |                 Training- en generatiesysteem maken                  |
+| 19/11 | 11:15 - 13:30 | 2:15 |              AI fixen! HIJ DOET HET!!! + beetje trainen              |
 
 Totaal: 54:05

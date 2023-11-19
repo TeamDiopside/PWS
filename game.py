@@ -1,4 +1,5 @@
 import math
+import time
 
 import numpy
 import pygame
@@ -17,10 +18,14 @@ text_color = (255, 255, 255)
 text_bg_color = (30, 30, 30)
 
 
-def start():
+def main():
     amount = int(input("Amount of cars: "))
     name = input("Generation name: ")
     generation = int(input("Generation: "))
+    go(amount, name, generation)
+
+
+def go(amount, name, generation):
     weights, biases = network.get_network_from_file(name, generation)
     game(amount, weights, biases, name, generation)
 
@@ -37,6 +42,8 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
     running = True
     frame = 1
+    gen_time = time.time()
+    max_time = 10
 
     # Maak auto's
     cars: list[Car] = create_cars(car_amount, starting_weights, starting_biases)
@@ -77,12 +84,15 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         selected_car = cars[selected_car_index]
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
+        debug_info.append(f"Generation: {generation}")
+        add_rounded_debug_info(f"Time: ", time.time() - gen_time)
+
+        selected_car.add_debug_text(selected_car_index)
 
         alive_cars = len(cars)
         for car in cars:
-            debug_info.append("")
-            debug_info.append(f"AUTO {cars.index(car) + 1}")
-
+            if time.time() - gen_time > max_time:
+                car.on_road = False
             if car.on_road:
                 car.calc_rays(roads)
                 car.move(cars, selected_car_index, delta_time)
@@ -92,10 +102,9 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                     car.calc_distance_to_finish(roads)
             else:
                 alive_cars -= 1
-                debug_info.append("Niet op de weg!!!")
-                debug_info.append(f"Distance: {car.distance_traveled}")
 
         if alive_cars <= 0:
+            gen_time = time.time()
             best_car = cars[0]
             for car in cars:
                 if car.distance_traveled > best_car.distance_traveled:
@@ -136,22 +145,21 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
 def create_cars(amount, weights, biases):
     def get_car(w, b):
-        return Car(200, 50.3, math.pi * -0.5, 0, True, w, b)
+        return Car(200, 0.3, math.pi * -0.5, 0, True, w, b)
 
     cars = [get_car(weights, biases)]
 
     for i in range(amount - 1):
-        cars.append(get_car(
-            network.change_weights(weights, 0.1),
-            network.change_biases(biases, 0.1))
-        )
+        we = network.change_weights(weights, 0.07)
+        bi = network.change_biases(biases, 0.07)
+        cars.append(get_car(we, bi))
 
     return cars
 
 
 def create_roads():
     roads: list[Road] = []
-    built_in_map = ["s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "r", "s", "r"]
+    built_in_map = ["b", "s", "l", "s", "r", "s", "r", "s", "s", "s", "s", "r", "s", "r", "l", "s", "e"]
     # built_in_map = ["s"]
     x, y = 0, 0
     direction = 0
@@ -283,6 +291,14 @@ class Road:
         elif self.road_type == "l":
             coords.append((1, -1, 1, 1))
             coords.append((-1, 1, 1, 1))
+        elif self.road_type == "b":
+            coords.append((-1, -1, 1, -1))
+            coords.append((-1, 1, 1, 1))
+            coords.append((-1, -1, -1, 1))
+        elif self.road_type == "e":
+            coords.append((-1, -1, 1, -1))
+            coords.append((-1, 1, 1, 1))
+            coords.append((1, -1, 1, 1))
 
         for pair in coords:
             vector1 = rotate_vector([pair[0], pair[1]], self.angle)
@@ -321,17 +337,24 @@ class Road:
     def draw(self, screen: pygame.surface.Surface, cam):
         straight_road = pygame.image.load("assets/road_straight.png")
         turn_road = pygame.image.load("assets/road_turn.png")
+        beginning_road = pygame.image.load("assets/road_beginning.png")
+        end_road = pygame.image.load("assets/road_end.png")
         destination = world_to_screen((self.pos.x, self.pos.y), cam, screen)
+
+        image = straight_road
 
         if self.road_type == "r":
             image = pygame.transform.rotate(turn_road, -self.angle + 90)
-            screen.blit(image, image.get_rect(center=destination))
         elif self.road_type == "l":
             image = pygame.transform.rotate(turn_road, -self.angle)
-            screen.blit(image, image.get_rect(center=destination))
         elif self.road_type == "s":
             image = pygame.transform.rotate(straight_road, self.angle)
-            screen.blit(image, image.get_rect(center=destination))
+        elif self.road_type == "b":
+            image = pygame.transform.rotate(beginning_road, self.angle)
+        elif self.road_type == "e":
+            image = pygame.transform.rotate(end_road, self.angle)
+
+        screen.blit(image, image.get_rect(center=destination))
 
         if debug_mode == 3:
             pygame.draw.circle(screen, edge_color, destination, 5)
@@ -395,7 +418,7 @@ class Car:
         if ai_enabled:
             inputs = [self.speed, self.movement_angle]
             for ray in self.rays:
-                inputs.append(ray.length)
+                inputs.append(ray.distance)
             outputs = network.calculate(self.weights, self.biases, inputs)
             steering = outputs[0] * 2 - 1
             gas = outputs[1] * 2 - 1
@@ -423,17 +446,12 @@ class Car:
         self.pos.x += -math.sin(self.movement_angle) * self.speed * delta_time
         self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time
 
-        add_rounded_debug_info("Snelheid: ", self.speed)
-        add_rounded_debug_info("Hoek: ", self.angle)
-        add_rounded_debug_info("X: ", self.pos.x)
-        add_rounded_debug_info("Y: ", self.pos.y)
-
     # ray casting om afstand tot de rand van de weg te detecteren
     def calc_rays(self, roads: list[Road]):
 
         for ray in self.rays:
             ray.intersection = 1
-            ray.distance = ray.length
+            ray.distance = ray.max_distance
             ray.can_draw = False
             ray.intersections = 0
 
@@ -449,8 +467,8 @@ class Car:
 
                     # Bereken het eindpunt van de ray op basis van de lengte en de hoek
                     r1 = self.pos
-                    r2 = Vector(self.pos.x + ray.length * math.cos(ray.angle),
-                                self.pos.y + ray.length * math.sin(ray.angle))
+                    r2 = Vector(self.pos.x + ray.max_distance * math.cos(ray.angle),
+                                self.pos.y + ray.max_distance * math.sin(ray.angle))
 
                     f_ray, f_muur, parallel = intersection(r1, r2, e1, e2)
 
@@ -458,7 +476,7 @@ class Car:
                         ray.can_draw = True
                         ray.intersection = min(ray.intersection, f_ray)
                         ray.intersections += 1
-                        ray.distance = ray.intersection * ray.length
+                        ray.distance = ray.intersection * ray.max_distance
 
     def calc_distance_to_finish(self, roads: list[Road]):
         self.middle_point = None
@@ -538,6 +556,20 @@ class Car:
                 (-math.sin(self.movement_angle) * 150 + self.pos.x, -math.cos(self.movement_angle) * 150 + self.pos.y),
                 cam, screen), 3)
 
+    def add_debug_text(self, index):
+        debug_info.append("")
+        debug_info.append(f"AUTO {index + 1}")
+
+        if self.on_road:
+            add_rounded_debug_info("Snelheid: ", self.speed)
+            add_rounded_debug_info("Hoek: ", self.angle)
+            add_rounded_debug_info("X: ", self.pos.x)
+            add_rounded_debug_info("Y: ", self.pos.y)
+        else:
+            debug_info.append("Niet op de weg!!!")
+            debug_info.append(f"Distance: {self.distance_traveled}")
+
+
     def __str__(self):
         return f"Car at ({round(self.pos.x)}, {round(self.pos.y)})"
 
@@ -560,9 +592,12 @@ class Ray:
         self.initial_angle = angle
         self.intersection = 1
         self.can_draw = False
-        self.length = 1
+        self.max_distance = 1000
         self.distance = 0
         self.intersections = 0
+
+    def __str__(self):
+        return f"Distance: {self.distance}"
 
 
 def rotate_image(surface, angle, pos):
@@ -599,5 +634,5 @@ def clear_debug_info():
 
 
 if __name__ == '__main__':
-    start()
-    # game(3, "alpha", 0)
+    main()
+    # start(3, "alpha", 0)

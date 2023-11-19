@@ -13,14 +13,14 @@
   - Movement bij verschillende FPS fixen
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
-  - De weights elke generatie een beetje aanpassen
-  - De beste weights van de vorige generatie kopiëren
-  - De beste weights bewaren per generatie
+  - ~~De weights elke generatie een beetje aanpassen~~
+  - ~~De beste weights van de vorige generatie kopiëren~~
+  - ~~De beste weights bewaren per generatie~~
   - Info over generatie bewaren in files
   - Functie voor "fine-tuning" naar mate van tijd
 - Beeld
   - ~~Info op het scherm kunnen laten zien~~
-  - Interface om bepaalde weights te laden? 
+  - ~~Interface om bepaalde weights te laden~~
 
 
 ## Misschien
