@@ -47,5 +47,6 @@
 | 18/11 | 21:00 - 23:45 | 2:45 |                 Training- en generatiesysteem maken                  |
 | 19/11 | 11:15 - 13:30 | 2:15 |              AI fixen! HIJ DOET HET!!! + beetje trainen              |
 | 19/11 | 13:45 - 15:30 | 1:45 |                  Trainen op verschillende racebanen                  |
+| 19/11 | 16:45 - 17:15 | 0:30 |                      Afbeeldingen optimaliseren                      |
 
-Totaal: 58:05
+Totaal: 58:35

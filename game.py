@@ -17,6 +17,11 @@ middle_line_color = (20, 200, 250)
 text_color = (255, 255, 255)
 text_bg_color = (30, 30, 30)
 
+straight_road = pygame.image.load("assets/road_straight.png")
+turn_road = pygame.image.load("assets/road_turn.png")
+beginning_road = pygame.image.load("assets/road_beginning.png")
+end_road = pygame.image.load("assets/road_end.png")
+
 max_change = 0.05
 max_time = 15
 
@@ -171,8 +176,8 @@ def create_cars(amount, weights, biases):
 def create_roads():
     roads: list[Road] = []
     # built_in_map = "bslsrsrssssrsrlse"
-    # built_in_map = "bsslssrsssssrssssrsrlse"
-    built_in_map = "bssrsrssssrsssslsslsrssse"
+    built_in_map = "bsslssrsssssrssssrsrlse"
+    # built_in_map = "bssrsrssssrsssslsslsrssse"
     # built_in_map = "bsssssssssssrsrslsssssse"
     x, y = 0, 0
     direction = 0
@@ -350,10 +355,6 @@ class Road:
         return middle
 
     def draw(self, screen: pygame.surface.Surface, cam):
-        straight_road = pygame.image.load("assets/road_straight.png")
-        turn_road = pygame.image.load("assets/road_turn.png")
-        beginning_road = pygame.image.load("assets/road_beginning.png")
-        end_road = pygame.image.load("assets/road_end.png")
         destination = world_to_screen((self.pos.x, self.pos.y), cam, screen)
 
         image = straight_road
@@ -651,4 +652,5 @@ def clear_debug_info():
 
 if __name__ == '__main__':
     main()
+    # cProfile.run("main()")
     # start(3, "alpha", 0)
