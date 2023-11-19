@@ -36,5 +36,6 @@
 | 31/10 | 17:10 - 19:05 | 1:55 |                         Hoofd en deelvragen                          |
 | 18/11 | 21:00 - 23:45 | 2:45 |                 Training- en generatiesysteem maken                  |
 | 19/11 | 11:15 - 12:45 | 1:30 |                      AI fixen! HIJ DOET HET!!!                       |
+| 19/11 | 21:15 - 21:30 | 0:15 |                          Progressiedocument                          |
 
-Totaal: 50:00
+Totaal: 50:15
