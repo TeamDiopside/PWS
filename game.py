@@ -9,6 +9,7 @@ import network
 debug_info: list[str] = []
 debug_mode = 2
 loose_cam = False
+ai_enabled = True
 
 background_color = (100, 100, 110)
 ray_color = (255, 255, 255)
@@ -22,8 +23,15 @@ turn_road = pygame.image.load("assets/road_turn.png")
 beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
 
-max_change = 0.05
-max_time = 15
+max_change = 0.1
+max_time = 10
+
+# built_in_map = "bslsrsrssssrsrlse"
+built_in_map = "bsslsssssssrssssse"
+# built_in_map = "bsslssrsssssrssssrsrlse"
+# built_in_map = "bssrsrssssrsssslsslsrssse"
+# built_in_map = "bsssssssssssrsrslsssssse"
+# built_in_map = "bsrslsslssssssssrsrsle"
 
 
 def main():
@@ -156,7 +164,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         clear_debug_info()
         frame += 1
         pygame.display.update()
-        clock.tick(20)
+        clock.tick()
 
 
 def create_cars(amount, weights, biases):
@@ -175,11 +183,6 @@ def create_cars(amount, weights, biases):
 
 def create_roads():
     roads: list[Road] = []
-    # built_in_map = "bslsrsrssssrsrlse"
-    built_in_map = "bsslssrsssssrssssrsrlse"
-    # built_in_map = "bssrsrssssrsssslsslsrssse"
-    # built_in_map = "bsssssssssssrsrslsssssse"
-    # built_in_map = "bsrslsslssssssssrsrsle"
     x, y = 0, 0
     direction = 0
     size = 200
@@ -337,11 +340,13 @@ class Road:
         if self.road_type == "s" or self.road_type == "b":
             coords.append((-1, 0, 1, 0))
         elif self.road_type == "r":
-            coords.append((0, 0, -1, 0))
-            coords.append((0, 1, 0, 0))
+            coords.append((0, 1, 0, 0.6))
+            coords.append((0, 0.6, -0.6, 0))
+            coords.append((-0.6, 0, -1, 0))
         elif self.road_type == "l":
-            coords.append((0, 0, 0, -1))
-            coords.append((-1, 0, 0, 0))
+            coords.append((-1, 0, -0.6, 0))
+            coords.append((-0.6, 0, 0, -0.6))
+            coords.append((-0, -0.6, 0, -1))
         elif self.road_type == "e":
             coords.append((-1, 0, 0, 0))
 
@@ -432,7 +437,6 @@ class Car:
         if self.speed < 0:
             d_rotation = -d_rotation
 
-        ai_enabled = True
         if ai_enabled:
             inputs = [self.speed, self.movement_angle]
             for ray in self.rays:
@@ -442,7 +446,7 @@ class Car:
             gas = outputs[1] * 2 - 1
 
             self.angle += d_rotation * steering
-            self.speed += acceleration * -gas
+            self.speed += acceleration * -gas * delta_time
 
         if cars.index(self) == selected_car_index and not ai_enabled:
             active_keys = pygame.key.get_pressed()
