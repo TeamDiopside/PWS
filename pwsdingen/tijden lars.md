@@ -49,5 +49,6 @@
 | 19/11 | 13:45 - 15:30 | 1:45 |                  Trainen op verschillende racebanen                  |
 | 19/11 | 16:45 - 17:15 | 0:30 |                      Afbeeldingen optimaliseren                      |
 | 23/11 | 16:30 - 18:15 | 1:45 |                  FPS fixen en middellijn verbeteren                  |
+| 29/11 | 10:00 - 12:15 | 2:15 |                        Problemen met AI fixen                        |
 
-Totaal: 60:20
+Totaal: 62:35
