@@ -10,6 +10,7 @@ debug_info: list[str] = []
 debug_mode = 2
 loose_cam = False
 ai_enabled = True
+mortal_cars = True
 
 background_color = (100, 100, 110)
 ray_color = (255, 255, 255)
@@ -27,7 +28,7 @@ max_change = 0.1
 max_time = 10
 
 # built_in_map = "bslsrsrssssrsrlse"
-built_in_map = "bsslsssssssrssssse"
+built_in_map = "bssssrsslssslsssrsse"
 # built_in_map = "bsslssrsssssrssssrsrlse"
 # built_in_map = "bssrsrssssrsssslsslsrssse"
 # built_in_map = "bsssssssssssrsrslsssssse"
@@ -66,7 +67,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
     cam = Camera(0, 0.001)
 
-    roads = create_roads()
+    roads, middle_segments, middle_lengths = create_roads()
 
     while running:
         delta_time = clock.get_time() / 16.6667
@@ -102,8 +103,6 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         debug_info.append(f"Generation: {name} {generation}")
         add_rounded_debug_info(f"Time: ", time.time() - gen_time)
 
-        selected_car.add_debug_text(selected_car_index)
-
         alive_cars = len(cars)
         for car in cars:
             if time.time() - gen_time > max_time:
@@ -114,9 +113,11 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
                 if car.rays[0].intersections % 2 == 0 and car.is_mortal:
                     car.on_road = False
-                    car.calc_distance_to_finish(roads)
+                    car.calc_distance_to_finish(roads, middle_segments, middle_lengths)
             else:
                 alive_cars -= 1
+
+        selected_car.add_debug_text(selected_car_index)
 
         if alive_cars <= 0:
             gen_time = time.time()
@@ -169,7 +170,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
 def create_cars(amount, weights, biases):
     def get_car(w, b):
-        return Car(200, 0.3, math.pi * -0.5, 0, True, w, b)
+        return Car(200, 0.3, math.pi * -0.5, 0, mortal_cars, w, b)
 
     cars = [get_car(weights, biases)]
 
@@ -183,6 +184,8 @@ def create_cars(amount, weights, biases):
 
 def create_roads():
     roads: list[Road] = []
+    middle_segments = []
+    middle_lengths: list[float] = []
     x, y = 0, 0
     direction = 0
     size = 200
@@ -208,7 +211,12 @@ def create_roads():
         elif road_type == "l":
             direction -= 1
 
-    return roads
+    for road in roads:
+        for segment in road.middle_lines:
+            middle_segments.append(segment)
+            middle_lengths.append(numpy.sqrt((segment[0] - segment[2]) ** 2 + (segment[1] - segment[3]) ** 2))
+
+    return roads, middle_segments, middle_lengths
 
 
 class Camera:
@@ -340,13 +348,13 @@ class Road:
         if self.road_type == "s" or self.road_type == "b":
             coords.append((-1, 0, 1, 0))
         elif self.road_type == "r":
-            coords.append((0, 1, 0, 0.6))
-            coords.append((0, 0.6, -0.6, 0))
             coords.append((-0.6, 0, -1, 0))
+            coords.append((-0.6, 0, 0, 0.6))
+            coords.append((0, 1, 0, 0.6))
         elif self.road_type == "l":
             coords.append((-1, 0, -0.6, 0))
             coords.append((-0.6, 0, 0, -0.6))
-            coords.append((-0, -0.6, 0, -1))
+            coords.append((0, -0.6, 0, -1))
         elif self.road_type == "e":
             coords.append((-1, 0, 0, 0))
 
@@ -413,7 +421,7 @@ class Car:
         self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = angle
         self.middle_point: Vector = Vector(0, 0)
-        self.middle_segment = (0, 0, 0)
+        self.middle = (0, 0, 0)
         self.distance_traveled = 0
         self.on_road = True
         self.finished_time = 0
@@ -438,7 +446,7 @@ class Car:
             d_rotation = -d_rotation
 
         if ai_enabled:
-            inputs = [self.speed, self.movement_angle]
+            inputs = [self.speed, abs(self.movement_angle % (0.5 * math.pi) - 0.25 * math.pi)]
             for ray in self.rays:
                 inputs.append(ray.distance)
             outputs = network.calculate(self.weights, self.biases, inputs)
@@ -500,7 +508,7 @@ class Car:
                         ray.intersections += 1
                         ray.distance = ray.intersection * ray.max_distance
 
-    def calc_distance_to_finish(self, roads: list[Road]):
+    def calc_distance_to_finish(self, roads: list[Road], middle_segments, middle_lengths):
         self.middle_point = None
 
         for i, road in enumerate(roads):
@@ -526,10 +534,10 @@ class Car:
                             new_distance = (p1 - ints).length()
                             if new_distance < distance:
                                 self.middle_point = ints
-                                self.middle_segment = (i, j, f_middle)
+                                self.middle = (middle_line, f_middle)
                         else:
                             self.middle_point = ints
-                            self.middle_segment = (i, j, f_middle)
+                            self.middle = (middle_line, f_middle)
                     else:
                         # De kortste afstand zit op een hoekpunt
                         new_distance1 = (p1 - m1).length()
@@ -538,13 +546,16 @@ class Car:
                         if self.middle_point is not None:
                             if (p1 - closest).length() < (p1 - self.middle_point).length():
                                 self.middle_point = closest
-                                self.middle_segment = (i, j, 0 if closest == m1 else 1)
+                                self.middle = (middle_line, 0 if closest == m1 else 1)
                         else:
                             self.middle_point = closest
-                            self.middle_segment = (i, j, 0 if closest == m1 else 1)
+                            self.middle = (middle_line, 0 if closest == m1 else 1)
 
-        self.distance_traveled = (self.middle_segment[0] + 0.5 * self.middle_segment[1] + self.middle_segment[
-            2]) / len(roads)
+        segment = middle_segments.index(self.middle[0])
+        previous_length = 0
+        for i in range(segment):
+            previous_length += middle_lengths[i]
+        self.distance_traveled = previous_length + middle_lengths[segment] * self.middle[1]
 
     # draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface, cam):
@@ -587,6 +598,7 @@ class Car:
             add_rounded_debug_info("Hoek: ", self.angle)
             add_rounded_debug_info("X: ", self.pos.x)
             add_rounded_debug_info("Y: ", self.pos.y)
+            debug_info.append(f"Distance: {self.distance_traveled}")
         else:
             debug_info.append("Niet op de weg!!!")
             debug_info.append(f"Distance: {self.distance_traveled}")
