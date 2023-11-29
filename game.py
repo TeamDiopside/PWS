@@ -67,7 +67,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
     cam = Camera(0, 0.001)
 
-    roads, middle_segments, middle_lengths = create_roads()
+    roads, middle_segments, middle_lengths, total_length = create_roads()
 
     while running:
         delta_time = clock.get_time() / 16.6667
@@ -113,7 +113,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
                 if car.rays[0].intersections % 2 == 0 and car.is_mortal:
                     car.on_road = False
-                    car.calc_distance_to_finish(roads, middle_segments, middle_lengths)
+                    car.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
             else:
                 alive_cars -= 1
 
@@ -211,12 +211,15 @@ def create_roads():
         elif road_type == "l":
             direction -= 1
 
+    total_length = 0
     for road in roads:
         for segment in road.middle_lines:
             middle_segments.append(segment)
-            middle_lengths.append(numpy.sqrt((segment[0] - segment[2]) ** 2 + (segment[1] - segment[3]) ** 2))
+            length = numpy.sqrt((segment[0] - segment[2]) ** 2 + (segment[1] - segment[3]) ** 2)
+            middle_lengths.append(length)
+            total_length += length
 
-    return roads, middle_segments, middle_lengths
+    return roads, middle_segments, middle_lengths, total_length
 
 
 class Camera:
@@ -508,7 +511,7 @@ class Car:
                         ray.intersections += 1
                         ray.distance = ray.intersection * ray.max_distance
 
-    def calc_distance_to_finish(self, roads: list[Road], middle_segments, middle_lengths):
+    def calc_distance_to_finish(self, roads: list[Road], middle_segments, middle_lengths, total_length):
         self.middle_point = None
 
         for i, road in enumerate(roads):
@@ -555,7 +558,7 @@ class Car:
         previous_length = 0
         for i in range(segment):
             previous_length += middle_lengths[i]
-        self.distance_traveled = previous_length + middle_lengths[segment] * self.middle[1]
+        self.distance_traveled = (previous_length + middle_lengths[segment] * self.middle[1]) / total_length
 
     # draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface, cam):

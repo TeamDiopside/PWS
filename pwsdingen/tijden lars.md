@@ -50,5 +50,6 @@
 | 19/11 | 16:45 - 17:15 | 0:30 |                      Afbeeldingen optimaliseren                      |
 | 23/11 | 16:30 - 18:15 | 1:45 |                  FPS fixen en middellijn verbeteren                  |
 | 29/11 | 10:00 - 12:15 | 2:15 |                        Problemen met AI fixen                        |
+| 29/11 | 13:30 - 16:30 | 3:00 |                            PWS-Werkmiddag                            |
 
-Totaal: 62:35
+Totaal: 65:35
