@@ -39,5 +39,6 @@
 | 19/11 | 21:15 - 21:30 | 0:15 |                          Progressiedocument                          |
 | 29/11 | 10:00 - 12:15 | 2:15 |                        Problemen met AI fixen                        |
 | 29/11 | 13:30 - 16:30 | 3:00 |                            PWS-Werkmiddag                            |
+| 2/12  | 13:45 - 16:00 | 2:15 |                         PWS verder schrijven                         |
 
-Totaal: 55:30
+Totaal: 57:45
