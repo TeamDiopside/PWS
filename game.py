@@ -24,7 +24,7 @@ turn_road = pygame.image.load("assets/road_turn.png")
 beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
 
-max_change = 0.1
+max_change = 0.3
 max_time = 20
 
 # built_in_map = "bslsrsrssssrsrlse"
