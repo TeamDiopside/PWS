@@ -11,6 +11,7 @@ debug_mode = 2
 loose_cam = False
 ai_enabled = True
 mortal_cars = True
+automatic_continue = True
 
 background_color = (100, 100, 110)
 ray_color = (255, 255, 255)
@@ -24,15 +25,16 @@ turn_road = pygame.image.load("assets/road_turn.png")
 beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
 
-max_change = 0.3
-max_time = 20
+max_change = 0.15
+max_time = 10
 
 # built_in_map = "bslsrsrssssrsrlse"
-built_in_map = "bssssrsslssslsssrsse"
+# built_in_map = "bssssrsslssslsssrsse"
 # built_in_map = "bsslssrsssssrssssrsrlse"
 # built_in_map = "bssrsrssssrsssslsslsrssse"
 # built_in_map = "bsssssssssssrsrslsssssse"
 # built_in_map = "bsrslsslssssssssrsrsle"
+built_in_map = "bsrslsslssslssrsrsssslrsre"
 
 
 def main():
@@ -71,13 +73,16 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
     while running:
         delta_time = clock.get_time() / 16.6667
+        global max_change
 
         # --- UPDATE ---
 
+        continue_gen = False
         for event in pygame.event.get():
             # afsluiten als je op het kruisje drukt
             if event.type == pygame.QUIT:
                 running = False
+
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     debug_mode = 1
@@ -97,46 +102,49 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                 if event.key == pygame.K_RIGHTBRACKET:
                     selected_car_index += 1
                     selected_car_index = selected_car_index % car_amount
+                if event.key == pygame.K_EQUALS:
+                    max_change += 0.01
+                if event.key == pygame.K_MINUS:
+                    max_change -= 0.01
+                if event.key == pygame.K_c:
+                    continue_gen = True
         selected_car = cars[selected_car_index]
 
         debug_info.append(f"FPS: {int(clock.get_fps())}")
         debug_info.append(f"Generation: {name} {generation}")
         add_rounded_debug_info(f"Time: ", time.time() - gen_time)
+        add_rounded_debug_info(f"Max Change: ", max_change)
 
         alive_cars = len(cars)
         for car in cars:
-            if time.time() - gen_time > max_time:
-                car.on_road = False
             if car.on_road:
                 car.calc_rays(roads)
                 car.move(cars, selected_car_index, delta_time)
-
-                if car.rays[0].intersections % 2 == 0 and car.is_mortal:
-                    car.on_road = False
-                    car.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
+                if car.rays[0].intersections % 2 == 0 and car.is_mortal or time.time() - gen_time > max_time:
+                    car.crash(roads, middle_segments, middle_lengths, total_length, gen_time)
             else:
                 alive_cars -= 1
 
         selected_car.add_debug_text(selected_car_index)
 
         if alive_cars <= 0:
-            gen_time = time.time()
             best_car = cars[0]
             finished_cars = []
             for car in cars:
                 if car.distance_traveled > best_car.distance_traveled:
                     best_car = car
                 if car.distance_traveled > 0.99:
-                    car.finished_time = time.time()
                     finished_cars.append(car)
 
             for car in finished_cars:
                 if car.finished_time < best_car.finished_time:
                     best_car = car
 
-            cars = create_cars(car_amount, best_car.weights, best_car.biases)
-            generation += 1
-            network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
+            if automatic_continue or continue_gen:
+                gen_time = time.time()
+                cars = create_cars(car_amount, best_car.weights, best_car.biases)
+                generation += 1
+                network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
 
         if loose_cam:
             cam.move()
@@ -251,6 +259,7 @@ class Camera:
 
         self.pos += self.speed
 
+        debug_info.append("")
         add_rounded_debug_info("Cam X: ", self.pos.x)
         add_rounded_debug_info("Cam Y: ", self.pos.y)
 
@@ -479,6 +488,11 @@ class Car:
         self.pos.x += -math.sin(self.movement_angle) * self.speed * delta_time
         self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time
 
+    def crash(self, roads, middle_segments, middle_lengths, total_length, gen_time):
+        self.on_road = False
+        self.finished_time = time.time() - gen_time
+        self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
+
     # ray casting om afstand tot de rand van de weg te detecteren
     def calc_rays(self, roads: list[Road]):
 
@@ -595,17 +609,16 @@ class Car:
     def add_debug_text(self, index):
         debug_info.append("")
         debug_info.append(f"AUTO {index + 1}")
+        add_rounded_debug_info("X: ", self.pos.x)
+        add_rounded_debug_info("Y: ", self.pos.y)
 
         if self.on_road:
             add_rounded_debug_info("Snelheid: ", self.speed)
             add_rounded_debug_info("Hoek: ", self.angle)
-            add_rounded_debug_info("X: ", self.pos.x)
-            add_rounded_debug_info("Y: ", self.pos.y)
-            debug_info.append(f"Distance: {self.distance_traveled}")
         else:
             debug_info.append("Niet op de weg!!!")
             debug_info.append(f"Distance: {self.distance_traveled}")
-
+            debug_info.append(f"Time: {self.finished_time}")
 
     def __str__(self):
         return f"Car at ({round(self.pos.x)}, {round(self.pos.y)})"
