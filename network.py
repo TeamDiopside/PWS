@@ -50,6 +50,7 @@ def calculate(all_weights, all_biases, inputs):
     return inputs
 
 
+# Verander de weights van de vorige generatie een klein beetje en hoop dat de auto beter is dan de vorige
 def change_weights(all_weights: list[list[list]], max_change):
     new_weights = []
     for x in all_weights:
@@ -64,6 +65,7 @@ def change_weights(all_weights: list[list[list]], max_change):
     return new_weights
 
 
+# Verander de biases van de vorige generatie een klein beetje en hoop dat de auto beter is dan de vorige
 def change_biases(all_biases, max_change):
     new_biases = []
     for x in all_biases:

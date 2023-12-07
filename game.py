@@ -228,7 +228,7 @@ def create_roads():
 
         roads.append(Road(x, y, road_type, simplified_direction * 90, size))
 
-        # de richting aanpassen voor de volgende
+        # De richting aanpassen voor de volgende
         if road_type == "r":
             direction += 1
         elif road_type == "l":
@@ -312,7 +312,7 @@ class Vector:
         return Vector(self.x * number, self.y * number)
 
 
-# Coordinaten van de wereld vertalen naar coordinaten op het scherm
+# Coördinaten van de wereld vertalen naar coordinaten op het scherm
 def world_to_screen(world_coords: tuple, cam: Camera, screen):
     return (world_coords[0] - cam.pos.x + screen.get_rect().width * 0.5,
             world_coords[1] - cam.pos.y + screen.get_rect().height * 0.5)
@@ -333,7 +333,7 @@ class Road:
         self.edges = self.create_edges()
         self.middle_lines = self.create_middle()
 
-    # De coordinaten maken voor de randen die bij het type weg horen
+    # De coördinaten maken voor de randen die bij het type weg horen
     def create_edges(self):
         edges = []
         coords = []
@@ -366,7 +366,7 @@ class Road:
 
         return edges
 
-    # De coordinaten maken voor de middellijk die bij het type weg hoort
+    # De coördinaten maken voor de middellijk die bij het type weg hoort
     def create_middle(self):
         middle = []
         coords = []
@@ -394,6 +394,7 @@ class Road:
 
         return middle
 
+    # De berekende wegen tekenen op het scherm op basis van de positie van de camera.
     def draw(self, screen: pygame.surface.Surface, cam):
         destination = world_to_screen((self.pos.x, self.pos.y), cam, screen)
 
@@ -412,12 +413,14 @@ class Road:
 
         screen.blit(image, image.get_rect(center=destination))
 
+        # Als debugmodus 3 aan staat ook de middelpunten en randen tekenen
         if debug_mode == 3:
             pygame.draw.circle(screen, edge_color, destination, 5)
             for edge in self.edges:
                 pygame.draw.line(screen, edge_color, world_to_screen((edge[0], edge[1]), cam, screen),
                                  world_to_screen((edge[2], edge[3]), cam, screen), 5)
 
+    # Als debugmodus 4 aan staat ook de middellijn over de weg tekenen
     def draw_middle(self, screen, cam, color):
         if debug_mode == 4:
             for middle_line in self.middle_lines:
@@ -501,12 +504,13 @@ class Car:
         self.pos.x += -math.sin(self.movement_angle) * self.speed * delta_time
         self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time
 
+    # Wanneer de auto van de weg af raakt, wordt de tijd opgeslagen en de afgelegde afstand berekend
     def crash(self, roads, middle_segments, middle_lengths, total_length, gen_time):
         self.on_road = False
         self.finished_time = time.time() - gen_time
         self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
 
-    # ray casting om afstand tot de rand van de weg te detecteren
+    # Ray casting om afstand tot de rand van de weg te detecteren
     def calc_rays(self, roads: list[Road]):
         for ray in self.rays:
             ray.intersection = 1
@@ -517,6 +521,7 @@ class Car:
             # Meedraaien met de auto
             ray.angle = math.radians(ray.initial_angle) - self.movement_angle
 
+            # Voor elke edge van elke road kijken of deze de ray snijdt
             for road in roads:
 
                 for edge in road.edges:
@@ -537,9 +542,11 @@ class Car:
                         ray.intersections += 1
                         ray.distance = ray.intersection * ray.max_distance
 
+    # Bereken de afstand tot de finish door te kijken bij welke middellijn de auto zich bevindt en de lengte van de middellijnen van gepasseerde wegdelen bij elkaar op te tellen.
     def calc_distance_to_finish(self, roads: list[Road], middle_segments, middle_lengths, total_length):
         self.middle_point = None
 
+        # Kijk op welk wegdeel de auto zit
         for i, road in enumerate(roads):
             for j, middle_line in enumerate(road.middle_lines):
 
@@ -582,11 +589,13 @@ class Car:
 
         segment = middle_segments.index(self.middle[0])
         previous_length = 0
+        # Afstanden van de middellijnen van vorige wegdelen optellen
         for i in range(segment):
             previous_length += middle_lengths[i]
+        # Bereken totale afgelegde afstand en deel dit door de totale afstand tussen start en finish om een getal tussen 0 en 1 te krijgen
         self.distance_traveled = (previous_length + middle_lengths[segment] * self.middle[1]) / total_length
 
-    # draw past veranderingen van move toe op het scherm
+    # Draw past veranderingen van move toe op het scherm
     def draw(self, screen: pygame.surface.Surface, cam):
         screen_coords = world_to_screen((self.pos.x, self.pos.y), cam, screen)
         image, rect = rotate_image(self.image, math.degrees(self.movement_angle), screen_coords)
@@ -595,6 +604,7 @@ class Car:
     def draw_debug(self, screen: pygame.surface.Surface, cam):
         screen_coords = world_to_screen((self.pos.x, self.pos.y), cam, screen)
 
+        # Als debugmodus 3 aan staat de rays tekenen rond de auto
         if debug_mode == 3:
             for ray in self.rays:
                 if ray.can_draw:
@@ -605,12 +615,14 @@ class Car:
                     pygame.draw.circle(screen, ray_color, (snijpunt_x, snijpunt_y), 5)
                     pygame.draw.line(screen, ray_color, screen_coords, (snijpunt_x, snijpunt_y))
 
+        # Als debugmodus 4 aan staat een lijntje trekken tussen de middellijn en de auto, mits de auto van de weg is geraakt
         if debug_mode == 4 and self.middle_point is not None and not self.on_road:
             pygame.draw.line(screen, middle_line_color, screen_coords,
                              world_vec_to_screen(self.middle_point, cam, screen), 3)
             pygame.draw.circle(screen, middle_line_color, world_vec_to_screen(self.middle_point, cam, screen), 5)
             pygame.draw.circle(screen, middle_line_color, world_to_screen((self.pos.x, self.pos.y), cam, screen), 5)
 
+        # Debugmodus 5 geeft de hoek aan waar de auto naartoe wil draaien
         if debug_mode == 5:
             pygame.draw.line(screen, middle_line_color, world_vec_to_screen(self.pos, cam, screen), world_to_screen(
                 (-math.sin(self.angle) * 150 + self.pos.x, -math.cos(self.angle) * 150 + self.pos.y), cam, screen), 3)
@@ -618,6 +630,7 @@ class Car:
                 (-math.sin(self.movement_angle) * 150 + self.pos.x, -math.cos(self.movement_angle) * 150 + self.pos.y),
                 cam, screen), 3)
 
+    # Voegt informatie van de auto toe aan de debugmodus
     def add_debug_info(self, index):
         debug_info.append("")
         debug_info.append(f"AUTO {index + 1}")
@@ -636,6 +649,7 @@ class Car:
         return f"Car at ({round(self.pos.x)}, {round(self.pos.y)})"
 
 
+# Berekent een snijpunt tussen 2 vectoren
 def intersection(a1, a2, b1, b2):
     cross = (b1.x - b2.x) * (a1.y - a2.y) - (b1.y - b2.y) * (a1.x - a2.x)
     if cross != 0:
@@ -648,6 +662,7 @@ def intersection(a1, a2, b1, b2):
         return 0, 0, True
 
 
+# Ray object met eigenschappen
 class Ray:
     def __init__(self, angle):
         self.angle = angle
@@ -676,6 +691,7 @@ def rotate_image(surface, angle, pos):
     return rotated_image, rect  # Return the rotated image and shifted rect.
 
 
+# Zorgt ervoor dat de tekst van de debugmodus op het scherm wordt weergegeven
 def draw_text(text_list: list[str], screen: pygame.surface.Surface):
     font_size = 15
     font = pygame.font.Font("assets/JetBrainsMono.ttf", font_size)
@@ -695,6 +711,7 @@ def clear_debug_info():
     debug_info = []
 
 
+# Eerste wat er gebeurt als je de code uitvoert, voert main() uit (bovenaan de code)
 if __name__ == '__main__':
     main()
     # cProfile.run("main()")

@@ -40,5 +40,6 @@
 | 29/11 | 10:00 - 12:15 | 2:15 |                        Problemen met AI fixen                        |
 | 29/11 | 13:30 - 16:30 | 3:00 |                            PWS-Werkmiddag                            |
 | 2/12  | 13:45 - 16:00 | 2:15 |                         PWS verder schrijven                         |
+| 7/12  | 21:15 - 22:00 | 0:45 |                           Meer commentaar                            |
 
-Totaal: 57:45
+Totaal: 58:30
