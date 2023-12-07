@@ -34,7 +34,8 @@ max_time = 10
 # built_in_map = "bssrsrssssrsssslsslsrssse"
 # built_in_map = "bsssssssssssrsrslsssssse"
 # built_in_map = "bsrslsslssssssssrsrsle"
-built_in_map = "bsrslsslssslssrsrsssslrsre"
+# built_in_map = "bsrslsslssslssrsrsssslrsre"
+built_in_map = "bslsre"
 
 
 def main():

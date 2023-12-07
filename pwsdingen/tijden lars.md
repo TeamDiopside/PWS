@@ -52,5 +52,6 @@
 | 29/11 | 10:00 - 12:15 | 2:15 |                        Problemen met AI fixen                        |
 | 29/11 | 13:30 - 16:30 | 3:00 |                            PWS-Werkmiddag                            |
 | 2/12  | 14:30 - 16:00 | 1:30 |                         Help de ai is kapot                          |
+| 7/12  | 15:45 - 18:20 | 2:35 |                    Verder aan het verslag werken                     |
 
-Totaal: 69:25
+Totaal: 72:00

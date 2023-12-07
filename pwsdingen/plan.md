@@ -2,8 +2,6 @@
 - Simulatie
   - Snelheid van simulatie aanpassen
   - Randen optimaliseren
-  - Hoek voor de input aanpassen
-  - Afstand tot finish fixen
 - Neural network
   - Afstand en tijd geven samen gecombineerd punten
   - Info over generatie bewaren in files
@@ -28,6 +26,8 @@
   - Performance verbeteren
   - Draaien verbeteren
   - Movement bij verschillende FPS fixen
+  - Hoek voor de input aanpassen
+  - Afstand tot finish fixen
 - Neural network
   - De weights elke generatie een beetje aanpassen
   - De beste weights van de vorige generatie kopiëren
