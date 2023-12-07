@@ -6,13 +6,14 @@ import pygame
 
 import network
 
-debug_info: list[str] = []
 debug_mode = 2
-loose_cam = False
 ai_enabled = True
-mortal_cars = True
-automatic_continue = True
+debug_info: list[str] = []   # Lijst met alles wat op het scherm komt te staan
+loose_cam = False            # Of de camera stilstaat of aan een auto zit
+mortal_cars = True           # Of de auto's kunnen crashen
+automatic_continue = True    # Of de volgende generatie automatisch start als de generatie klaar is
 
+# RGB-waarden voor de kleuren van dingen
 background_color = (100, 100, 110)
 ray_color = (255, 255, 255)
 edge_color = (240, 20, 50)
@@ -25,9 +26,10 @@ turn_road = pygame.image.load("assets/road_turn.png")
 beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
 
-max_change = 0.15
-max_time = 10
+max_change = 0.15   # de maximale hoeveelheid die weights en biases kunnen veranderen per generatie
+max_time = 10       # de maximale tijd per generatie in seconden
 
+# Alle ingebouwde wegen die we kunnen aanzetten
 # built_in_map = "bslsrsrssssrsrlse"
 # built_in_map = "bssssrsslssslsssrsse"
 # built_in_map = "bsslssrsssssrssssrsrlse"
@@ -38,6 +40,7 @@ max_time = 10
 built_in_map = "bslsre"
 
 
+# Inputs in de console zetten
 def main():
     amount = int(input("Amount of cars: "))
     name = input("Generation name: ")
@@ -45,11 +48,13 @@ def main():
     go(amount, name, generation)
 
 
+# Weights en biases uit een file halen en de simulatie starten
 def go(amount, name, generation):
     weights, biases = network.get_network_from_file(name, generation)
     game(amount, weights, biases, name, generation)
 
 
+# De simulatie: beginwaarden en de loop
 def game(car_amount, starting_weights, starting_biases, name, generation):
     global debug_mode, loose_cam
     pygame.init()
@@ -64,7 +69,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
     frame = 1
     gen_time = time.time()
 
-    # Maak auto's
+    # De lijst met auto's maken
     cars: list[Car] = create_cars(car_amount, starting_weights, starting_biases)
     selected_car_index = 0
 
@@ -72,18 +77,23 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
     roads, middle_segments, middle_lengths, total_length = create_roads()
 
+    # De loop die er voor zorgt dat we steeds nieuwe frames krijgen, alles wat hierin zit wordt elke frame gedaan
     while running:
+
+        # --- UPDATE --- hier berekenen we alles voor deze frame
+
+        # Delta time is de tijd die de vorige frame nodig had,
+        # hiermee kunnen we de bewegingen met verschillende FPS gelijk laten lopen
         delta_time = clock.get_time() / 16.6667
+
         global max_change
-
-        # --- UPDATE ---
-
         continue_gen = False
         for event in pygame.event.get():
-            # afsluiten als je op het kruisje drukt
+            # Afsluiten als je op het kruisje drukt
             if event.type == pygame.QUIT:
                 running = False
 
+            # Voor elke ingedrukte knop iets doen
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_1:
                     debug_mode = 1
@@ -109,25 +119,31 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                     max_change -= 0.01
                 if event.key == pygame.K_c:
                     continue_gen = True
-        selected_car = cars[selected_car_index]
 
+        # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
         debug_info.append(f"FPS: {int(clock.get_fps())}")
         debug_info.append(f"Generation: {name} {generation}")
         add_rounded_debug_info(f"Time: ", time.time() - gen_time)
         add_rounded_debug_info(f"Max Change: ", max_change)
 
+        selected_car = cars[selected_car_index]
+        selected_car.add_debug_info(selected_car_index)
+
         alive_cars = len(cars)
+
+        # Voor elke auto de rays berekenen, de bewegingen berekenen en kijken of de auto gecrasht is
         for car in cars:
             if car.on_road:
                 car.calc_rays(roads)
                 car.move(cars, selected_car_index, delta_time)
-                if car.rays[0].intersections % 2 == 0 and car.is_mortal or time.time() - gen_time > max_time:
+
+                # Crashen als de ray een even aantal lijnen tegenkomt of als de tijd op is
+                if car.rays[0].intersections % 2 == 0 and mortal_cars or time.time() - gen_time > max_time:
                     car.crash(roads, middle_segments, middle_lengths, total_length, gen_time)
             else:
                 alive_cars -= 1
 
-        selected_car.add_debug_text(selected_car_index)
-
+        # De volgende generatie starten als alle auto's gecrasht zijn en uitzoeken wie de winnaar is
         if alive_cars <= 0:
             best_car = cars[0]
             finished_cars = []
@@ -152,11 +168,11 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         else:
             cam.speed = Vector(0, 0)
             cam.pos = selected_car.pos
-            cam.mouse_move()
+            cam.calculate_mouse_movement()
 
-        # --- DRAW ---
+        # --- DRAW --- hier tekenen we alles op het scherm
 
-        # maak scherm grijs
+        # Maak scherm grijs
         screen.fill(background_color)
 
         for i, road in enumerate(roads):
@@ -178,16 +194,14 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
 
 def create_cars(amount, weights, biases):
-    def get_car(w, b):
-        return Car(200, 0.3, math.pi * -0.5, 0, mortal_cars, w, b)
+    # Altijd de beste auto weer in de volgende generatie stoppen
+    cars = [Car(weights, biases)]
 
-    cars = [get_car(weights, biases)]
-
+    # Het neural network aanpassen voor alle andere auto's
     for i in range(amount - 1):
-        we = network.change_weights(weights, max_change)
-        bi = network.change_biases(biases, max_change)
-        cars.append(get_car(we, bi))
-
+        changed_weights = network.change_weights(weights, max_change)
+        changed_biases = network.change_biases(biases, max_change)
+        cars.append(Car(changed_weights, changed_biases))
     return cars
 
 
@@ -202,7 +216,7 @@ def create_roads():
     for road_type in built_in_map:
         simplified_direction = direction % 4
 
-        # de huidige positie verschuiven
+        # Steeds naar de volgende positie schuiven
         if simplified_direction == 0:
             x += size
         elif simplified_direction == 1:
@@ -235,7 +249,7 @@ class Camera:
     def __init__(self, x, y):
         self.pos = Vector(x, y)
         self.speed = Vector(0, 0)
-        self.mouse_down = Vector(0, 0)
+        self.mouse_down = Vector(0, 0)   # Waar de muis heeft geklikt
 
     def move(self):
         acceleration = 1
@@ -253,7 +267,7 @@ class Camera:
             self.pos = Vector(0, 0)
             self.speed = Vector(0, 0)
 
-        self.mouse_move()
+        self.calculate_mouse_movement()
 
         self.speed.x *= 0.95
         self.speed.y *= 0.95
@@ -264,7 +278,7 @@ class Camera:
         add_rounded_debug_info("Cam X: ", self.pos.x)
         add_rounded_debug_info("Cam Y: ", self.pos.y)
 
-    def mouse_move(self):
+    def calculate_mouse_movement(self):
         new_mouse = Vector(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
         if pygame.mouse.get_pressed()[0]:
             self.pos -= new_mouse - self.mouse_down
@@ -273,7 +287,7 @@ class Camera:
         self.mouse_down = new_mouse
 
 
-# coordinate method om ons leven makkelijker te maken
+# De bekende
 class Vector:
     def __init__(self, x, y):
         self.x = x
@@ -295,22 +309,21 @@ class Vector:
         return Vector(-self.y, self.x)
 
     def multiply(self, number):
-        self.x *= number
-        self.y *= number
-        return self
+        return Vector(self.x * number, self.y * number)
 
 
+# Coordinaten van de wereld vertalen naar coordinaten op het scherm
 def world_to_screen(world_coords: tuple, cam: Camera, screen):
     return (world_coords[0] - cam.pos.x + screen.get_rect().width * 0.5,
             world_coords[1] - cam.pos.y + screen.get_rect().height * 0.5)
 
 
+# Hetzelfde maar dan voor een vector
 def world_vec_to_screen(world_coords: Vector, cam: Camera, screen):
     return (world_coords.x - cam.pos.x + screen.get_rect().width * 0.5,
             world_coords.y - cam.pos.y + screen.get_rect().height * 0.5)
 
 
-# dit moet boven de Car class want anders werkt die niet, deze class moet dus eerder in de file staan
 class Road:
     def __init__(self, x, y, road_type, angle, size):
         self.pos = Vector(x, y)
@@ -320,7 +333,7 @@ class Road:
         self.edges = self.create_edges()
         self.middle_lines = self.create_middle()
 
-    # de coordinaten maken voor de randen die bij het type weg horen
+    # De coordinaten maken voor de randen die bij het type weg horen
     def create_edges(self):
         edges = []
         coords = []
@@ -353,7 +366,7 @@ class Road:
 
         return edges
 
-    # de coordinaten maken voor de randen die bij het type weg horen
+    # De coordinaten maken voor de middellijk die bij het type weg hoort
     def create_middle(self):
         middle = []
         coords = []
@@ -424,15 +437,14 @@ def rotate_vector(vector, angle):
 
 
 class Car:
-    def __init__(self, x, y, angle, speed, mortal, weights, biases):
+    def __init__(self, weights, biases):
         self.weights = weights
         self.biases = biases
-        self.is_mortal = mortal
-        self.pos = Vector(x, y)
-        self.angle: float = angle
-        self.speed: float = speed
+        self.pos = Vector(200, 0.3)
+        self.angle: float = math.pi * -0.5
+        self.speed: float = 0
         self.image = pygame.image.load("assets/red_car.png")
-        self.movement_angle = angle
+        self.movement_angle = math.pi * -0.5
         self.middle_point: Vector = Vector(0, 0)
         self.middle = (0, 0, 0)
         self.distance_traveled = 0
@@ -496,7 +508,6 @@ class Car:
 
     # ray casting om afstand tot de rand van de weg te detecteren
     def calc_rays(self, roads: list[Road]):
-
         for ray in self.rays:
             ray.intersection = 1
             ray.distance = ray.max_distance
@@ -607,7 +618,7 @@ class Car:
                 (-math.sin(self.movement_angle) * 150 + self.pos.x, -math.cos(self.movement_angle) * 150 + self.pos.y),
                 cam, screen), 3)
 
-    def add_debug_text(self, index):
+    def add_debug_info(self, index):
         debug_info.append("")
         debug_info.append(f"AUTO {index + 1}")
         add_rounded_debug_info("X: ", self.pos.x)
