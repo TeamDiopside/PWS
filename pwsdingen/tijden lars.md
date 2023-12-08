@@ -54,5 +54,7 @@
 | 2/12  | 14:30 - 16:00 | 1:30 |                         Help de ai is kapot                          |
 | 7/12  | 15:45 - 18:20 | 2:35 |                    Verder aan het verslag werken                     |
 | 7/12  | 18:30 - 19:15 | 0:45 |                          Comments toevoegen                          |
+| 8/12  | 11:30 - 12:45 | 1:45 |                            Meer schrijven                            |
+| 8/12  | 15:00 - 15:20 | 0:20 |                        Gesprekje met de Kogel                        |
 
-Totaal: 72:45
+Totaal: 74:50

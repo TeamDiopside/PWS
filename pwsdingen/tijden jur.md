@@ -41,5 +41,7 @@
 | 29/11 | 13:30 - 16:30 | 3:00 |                            PWS-Werkmiddag                            |
 | 2/12  | 13:45 - 16:00 | 2:15 |                         PWS verder schrijven                         |
 | 7/12  | 21:15 - 22:00 | 0:45 |                           Meer commentaar                            |
+| 8/12  | 11:30 - 12:45 | 1:45 |                            Meer schrijven                            |
+| 8/12  | 15:00 - 15:20 | 0:20 |                        Gesprekje met de Kogel                        |
 
-Totaal: 58:30
+Totaal: 60:35
