@@ -43,5 +43,6 @@
 | 7/12  | 21:15 - 22:00 | 0:45 |                           Meer commentaar                            |
 | 8/12  | 11:30 - 12:45 | 1:45 |                            Meer schrijven                            |
 | 8/12  | 15:00 - 15:20 | 0:20 |                        Gesprekje met de Kogel                        |
+| 10/12 | 20:15 - 22:00 | 1:45 |                            Weer schrijven                            |
 
-Totaal: 60:35
+Totaal: 62:20
