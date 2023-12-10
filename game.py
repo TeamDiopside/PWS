@@ -445,8 +445,8 @@ class Car:
         self.weights = weights
         self.biases = biases
         self.pos = Vector(200, 0.3)
-        self.angle: float = math.pi * -0.5
-        self.speed: float = 0
+        self.angle = math.pi * -0.5
+        self.speed = 0
         self.image = pygame.image.load("assets/red_car.png")
         self.movement_angle = math.pi * -0.5
         self.middle_point: Vector = Vector(0, 0)
@@ -455,7 +455,6 @@ class Car:
         self.on_road = True
         self.finished_time = 0
 
-        # van 0 tot 360 met stappen van 10 (in een cirkel rond de auto dus)
         self.rays: list[Ray] = []
         for ray_angle in range(180, 361, 30):
             self.rays.append(Ray(ray_angle))
