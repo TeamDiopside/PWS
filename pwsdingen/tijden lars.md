@@ -56,5 +56,6 @@
 | 7/12  | 18:30 - 19:15 | 0:45 |                          Comments toevoegen                          |
 | 8/12  | 11:30 - 12:45 | 1:45 |                            Meer schrijven                            |
 | 8/12  | 15:00 - 15:20 | 0:20 |                        Gesprekje met de Kogel                        |
+| 10/12 | 17:15 - 19:00 | 1:45 |                          Verslag schrijven                           |
 
-Totaal: 74:50
+Totaal: 76:35
