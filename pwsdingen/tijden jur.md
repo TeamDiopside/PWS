@@ -44,5 +44,7 @@
 | 8/12  | 11:30 - 12:45 | 1:45 |                            Meer schrijven                            |
 | 8/12  | 15:00 - 15:20 | 0:20 |                        Gesprekje met de Kogel                        |
 | 10/12 | 20:15 - 22:00 | 1:45 |                            Weer schrijven                            |
+| 12/12 | 16:50 - 19:15 | 3:25 |    Schrijven, voorbeeld pws'en bekijken en handleiding doorkijken    |
+| 12/12 | 19:35 - 21:15 | 1:40 |                              Schrijven                               |
 
-Totaal: 62:20
+Totaal: 67:25

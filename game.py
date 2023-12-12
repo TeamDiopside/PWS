@@ -464,8 +464,9 @@ class Car:
         self.speed *= 0.97 ** delta_time
         acceleration = 0.6
 
-        # de kleine afstand die je in deze frame kan draaien, gebaseerd op hoe snel je gaat
+        # De kleine afstand die je in deze frame kan draaien, gebaseerd op hoe snel je gaat
         d_rotation = 0
+        # Snelheid mag niet 0 zijn, zonder verplaatsing kun je niet draaien
         if self.speed != 0:
             x = 0.08 * abs(self.speed) - 1
             d_rotation = delta_time * 0.05 * (1 - x * x)
