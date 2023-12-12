@@ -461,6 +461,7 @@ class Car:
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
     def move(self, cars, selected_car_index, delta_time):
+        # De wrijving van de banden, waardoor de snelheid afneemt
         self.speed *= 0.97 ** delta_time
         acceleration = 0.6
 
@@ -476,12 +477,15 @@ class Car:
 
         if ai_enabled:
             inputs = [self.speed, abs(self.movement_angle % (0.5 * math.pi) - 0.25 * math.pi)]
-            for ray in self.rays:
+            for ray in self.rays:  # Alle rays aan de inputlijst toevoegen
                 inputs.append(ray.distance)
             outputs = network.calculate(self.weights, self.biases, inputs)
+
+            # Outputs omzetten naar getallen van -1 naar 1
             steering = outputs[0] * 2 - 1
             gas = outputs[1] * 2 - 1
 
+            # De outputs gebruiken
             self.angle += d_rotation * steering
             self.speed += acceleration * -gas * delta_time
 
@@ -500,7 +504,6 @@ class Car:
                 self.speed = 0
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1 * delta_time
-        # self.movement_angle = self.angle
 
         self.pos.x += -math.sin(self.movement_angle) * self.speed * delta_time
         self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time

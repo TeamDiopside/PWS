@@ -58,7 +58,8 @@
 | 8/12  | 15:00 - 15:20 | 0:20 |                        Gesprekje met de Kogel                        |
 | 10/12 | 17:15 - 19:00 | 1:45 |                          Verslag schrijven                           |
 | 10/12 | 20:15 - 21:15 | 1:00 |                          Verslag schrijven                           |
+| 11/12 | 19:30 - 20:00 | 0:30 |                                                                      |
 | 12/12 | 17:00 - 18:15 | 1:15 |                          Verslag schrijven                           |
 | 12/12 | 19:15 - 21:00 | 1:45 |                          Verslag schrijven                           |
 
-Totaal: 80:35
+Totaal: 81:05
