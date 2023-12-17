@@ -41,15 +41,6 @@ def create_random_biases(length):
     return matrix
 
 
-def calculate(all_weights, all_biases, inputs):
-    # uitrekenen van layers achter elkaar
-    for w, weight in enumerate(all_weights):
-        inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
-        for n, number in enumerate(inputs):
-            inputs[n] = sigmoid(number + all_biases[w][n])  # alles door de sigmoid functie halen
-    return inputs
-
-
 # Verander de weights van de vorige generatie een klein beetje en hoop dat de auto beter is dan de vorige
 def change_weights(all_weights: list[list[list]], max_change):
     new_weights = []
@@ -92,6 +83,15 @@ def get_network_from_file(name, generation):
     network = json.loads(file.read())
     file.close()
     return network[0], network[1]
+
+
+def calculate(all_weights, all_biases, inputs):
+    # uitrekenen van layers achter elkaar
+    for w, weight in enumerate(all_weights):
+        inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
+        for n, number in enumerate(inputs):
+            inputs[n] = sigmoid(number + all_biases[w][n])  # alles door de sigmoid functie halen
+    return inputs
 
 
 def sigmoid(x):
