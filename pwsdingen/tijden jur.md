@@ -1,4 +1,6 @@
-# 2023
+# Logboek Jur
+
+## 2023
 
 |  Dag  |    Tijden     | Duur |                              Activiteit                              |
 |:-----:|:-------------:|:----:|:--------------------------------------------------------------------:|
@@ -26,7 +28,7 @@
 | 18/10 | 12:15 - 12:35 | 0:20 |                        Gesprekje met De Kogel                        |
 | 19/10 | 15:20 - 16:30 | 1:10 |     Beginnen met de afstand tot het midden van de weg berekenen      |
 | 20/10 | 11:30 - 12:40 | 1:10 |                           Middellijn drama                           |
-| 25/10 | 12:30 - 16:40 | 4:10 |    Coordinaten categoriseren, camera modes, middellijn, meer auto    |
+| 25/10 | 12:30 - 16:40 | 4:10 |    Coördinaten categoriseren, camera modes, middellijn, meer auto    |
 | 25/10 | 22:10 - 23:30 | 1:20 |                        Meer met vectoren doen                        |
 | 27/10 | 20:20 - 21:15 | 0:55 |             Afstand tot finish berekenen en minder rays              |
 | 28/10 | 14:15 - 15:00 | 0:45 |     Performance upgrades door ray berekeningen te optimaliseren      |
@@ -46,5 +48,7 @@
 | 10/12 | 20:15 - 22:00 | 1:45 |                            Weer schrijven                            |
 | 12/12 | 16:50 - 19:15 | 3:25 |    Schrijven, voorbeeld pws'en bekijken en handleiding doorkijken    |
 | 12/12 | 19:35 - 21:15 | 1:40 |                              Schrijven                               |
+| 17/12 | 11:25 - 14:45 | 3:20 |                               Verslag                                |
+| 18/12 | 15:30 - 16:45 | 1:15 |                               Verslag                                |
 
-Totaal: 67:25
+Totaal: 72:00
