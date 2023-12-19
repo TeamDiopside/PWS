@@ -6,4 +6,4 @@ If you're a teacher from our school: Hier kun je de code vinden, `game.py` is wa
 
 Om de dependencies te downloaden run `dependencies.bat`, als dat tenminste één keer gedaan is, kun je de simulatie starten door `start.bat` te runnen.
 
-Zit je op een mac, run dan `dependencies.sh` en `start.sh`.
+Zit je op een mac, run dan `dependencies.command` en `start.command`.
