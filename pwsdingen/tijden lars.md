@@ -63,5 +63,11 @@
 | 11/12 | 19:30 - 20:00 | 0:30 |                          Verslag schrijven                           |
 | 12/12 | 17:00 - 18:15 | 1:15 |                          Verslag schrijven                           |
 | 12/12 | 19:15 - 21:00 | 1:45 |                          Verslag schrijven                           |
+| 15/12 | 17:30 - 20:20 | 2:50 |                          Verslag schrijven                           |
+| 16/12 | 12:00 - 13:45 | 1:45 |                          Verslag schrijven                           |
+| 16/12 | 18:30 - 19:00 | 0:30 |                          Verslag schrijven                           |
+| 17/12 | 16:45 - 17:30 | 0:45 |                          Verslag schrijven                           |
+| 18/12 | 14:35 - 16:00 | 1:25 |                          Verslag schrijven                           |
+| 18/12 | 20:15 - 23:30 | 3:15 |                          Verslag schrijven                           |
 
-Totaal: 81:05
+Totaal: 91:35
