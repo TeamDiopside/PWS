@@ -1,4 +1,5 @@
 import math
+import random
 import time
 
 import numpy
@@ -27,7 +28,7 @@ beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
 
 max_change = 0.15   # de maximale hoeveelheid die weights en biases kunnen veranderen per generatie
-max_time = 20       # de maximale tijd per generatie in seconden
+max_time = 10       # de maximale tijd per generatie in seconden
 
 # Alle ingebouwde wegen die we kunnen aanzetten
 # built_in_map = "bslsrsrssssrsrlse"
@@ -39,6 +40,21 @@ built_in_map = "bsssrsssslssse"
 # built_in_map = "bsrslsslssssssssrsrsle"
 # built_in_map = "bsrslsslssslssrsrsssslrsre"
 # built_in_map = "bslsre"
+
+# Alle ingebouwde maps voor het trainen
+training_maps = [
+    "bssssssssssrsslse",
+    "bsssslsssssrsslse",
+    "bssssrsssssrsslse",
+    "bssslsrssssrsslse",
+    "bsssrslssssrsslse",
+    "bssslslssssrsslse",
+    "bsssrsrsssssrsslse",
+    "bssrsssssssrsslse",
+    "bsslsssssssrsslse",
+    "bssssssrsssrsslse",
+    "bsssssslsssrsslse",
+]
 
 
 # Inputs in de console zetten
@@ -88,6 +104,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         delta_time = clock.get_time() / 16.6667
 
         global max_change
+        global max_time
         continue_gen = False
         for event in pygame.event.get():
             # Afsluiten als je op het kruisje drukt
@@ -120,6 +137,10 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                     max_change -= 0.01
                 if event.key == pygame.K_c:
                     continue_gen = True
+                if event.key == pygame.K_p:
+                    max_time += 1
+                if event.key == pygame.K_o:
+                    max_time -= 1
 
         # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
         debug_info.append(f"FPS: {int(clock.get_fps())}")
@@ -134,7 +155,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
 
         # Voor elke auto de rays berekenen, de bewegingen berekenen en kijken of de auto gecrasht is
         for car in cars:
-            if car.on_road:
+            if car.on_road and not continue_gen:
                 car.calc_rays(roads)
                 car.move(cars, selected_car_index, delta_time)
 
@@ -161,6 +182,8 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
             if automatic_continue or continue_gen:
                 gen_time = time.time()
                 cars = create_cars(car_amount, best_car.weights, best_car.biases)
+                if True:
+                    roads, middle_segments, middle_lengths, total_length = create_roads()
                 generation += 1
                 network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
 
@@ -201,7 +224,7 @@ def create_cars(amount, weights, biases):
     # Het neural network aanpassen voor alle andere auto's
     for i in range(amount - 1):
         changed_weights = network.change_weights(weights, max_change)
-        changed_biases = network.change_biases(biases, max_change)
+        changed_biases = network.change_biases(biases, max_change / 3)
         cars.append(Car(changed_weights, changed_biases))
     return cars
 
@@ -214,7 +237,9 @@ def create_roads():
     direction = 0
     size = 200
 
-    for road_type in built_in_map:
+    selected_map = training_maps[random.randint(0, len(training_maps) - 1)]
+
+    for road_type in selected_map:
         simplified_direction = direction % 4
 
         # Steeds naar de volgende positie schuiven
