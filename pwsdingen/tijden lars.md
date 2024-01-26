@@ -70,5 +70,6 @@
 | 18/12 | 14:35 - 16:00 | 1:25 |                          Verslag schrijven                           |
 | 18/12 | 20:15 - 23:30 | 3:15 |                          Verslag schrijven                           |
 | 20/12 | 16:00 - 17:00 | 1:00 |          Random maps, max time en biases minder veranderen           |
+| 26/01 | 21:00 - 21:30 | 0:30 |                          Verslag schrijven                           |
 
-Totaal: 92:35
+Totaal: 93:05
