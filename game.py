@@ -345,7 +345,7 @@ def world_to_screen(world_coords: tuple, cam: Camera, screen):
 
 
 # Hetzelfde maar dan voor een vector
-def world_vec_to_screen(world_coords: Vector, cam: Camera, screen):
+def world_to_screen_vec(world_coords: Vector, cam: Camera, screen):
     return (world_coords.x - cam.pos.x + screen.get_rect().width * 0.5,
             world_coords.y - cam.pos.y + screen.get_rect().height * 0.5)
 
@@ -491,11 +491,8 @@ class Car:
         acceleration = 0.6
 
         # De kleine afstand die je in deze frame kan draaien, gebaseerd op hoe snel je gaat
-        d_rotation = 0
-        # Snelheid mag niet 0 zijn, zonder verplaatsing kun je niet draaien
-        if self.speed != 0:
-            x = 0.08 * abs(self.speed) - 1
-            d_rotation = delta_time * 0.05 * (1 - x * x)
+        x = 0.08 * abs(self.speed) - 1
+        d_rotation = delta_time * 0.05 * (1 - x * x)
 
         if self.speed < 0:
             d_rotation = -d_rotation
@@ -647,15 +644,15 @@ class Car:
         # Als debugmodus 4 aan staat een lijntje trekken tussen de middellijn en de auto, mits de auto van de weg is geraakt
         if debug_mode == 4 and self.middle_point is not None and not self.on_road:
             pygame.draw.line(screen, middle_line_color, screen_coords,
-                             world_vec_to_screen(self.middle_point, cam, screen), 3)
-            pygame.draw.circle(screen, middle_line_color, world_vec_to_screen(self.middle_point, cam, screen), 5)
+                             world_to_screen_vec(self.middle_point, cam, screen), 3)
+            pygame.draw.circle(screen, middle_line_color, world_to_screen_vec(self.middle_point, cam, screen), 5)
             pygame.draw.circle(screen, middle_line_color, world_to_screen((self.pos.x, self.pos.y), cam, screen), 5)
 
         # Debugmodus 5 geeft de hoek aan waar de auto naartoe wil draaien
         if debug_mode == 5:
-            pygame.draw.line(screen, middle_line_color, world_vec_to_screen(self.pos, cam, screen), world_to_screen(
+            pygame.draw.line(screen, middle_line_color, world_to_screen_vec(self.pos, cam, screen), world_to_screen(
                 (-math.sin(self.angle) * 150 + self.pos.x, -math.cos(self.angle) * 150 + self.pos.y), cam, screen), 3)
-            pygame.draw.line(screen, ray_color, world_vec_to_screen(self.pos, cam, screen), world_to_screen(
+            pygame.draw.line(screen, ray_color, world_to_screen_vec(self.pos, cam, screen), world_to_screen(
                 (-math.sin(self.movement_angle) * 150 + self.pos.x, -math.cos(self.movement_angle) * 150 + self.pos.y),
                 cam, screen), 3)
 
