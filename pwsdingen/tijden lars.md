@@ -73,6 +73,7 @@
 | 26/01 | 21:00 - 21:30 | 0:30 |                          Verslag schrijven                           |
 | 27/01 | 14:00 - 15:45 | 1:45 |              Verslag schrijven, code blocks verbeteren               |
 | 27/01 | 17:20 - 18:30 | 1:10 |                          Verslag schrijven                           |
-| 28/01 | 16:00 - 18:00 | 2:00 |                          Verslag schrijven                           |
+| 28/01 | 16:00 - 18:15 | 2:15 |                          Verslag schrijven                           |
+| 28/01 | 19:10 - 19:20 | 0:10 |                          Verslag schrijven                           |
 
-Totaal: 98:00
+Totaal: 98:25
