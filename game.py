@@ -28,7 +28,7 @@ beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
 
 max_change = 0.15   # de maximale hoeveelheid die weights en biases kunnen veranderen per generatie
-max_time = 10       # de maximale tijd per generatie in seconden
+max_time = 20       # de maximale tijd per generatie in seconden
 
 # Alle ingebouwde wegen die we kunnen aanzetten
 # built_in_map = "bslsrsrssssrsrlse"
