@@ -54,5 +54,6 @@
 |  4/1  | 14:00 - 15:00 | 1:00 |                               Verslag                                |
 | 26/1  | 20:50 - 22:15 | 1:25 |                               Verslag                                |
 | 27/1  | 17:20 - 20:15 | 2:55 |                               Verslag                                |
+| 30/1  | 15:00 - 16:45 | 1:45 |                    Verslag en praten met De Kogel                    |
 
-Totaal: 79:20
+Totaal: 81:05
