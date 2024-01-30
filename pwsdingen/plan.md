@@ -3,10 +3,7 @@
   - Snelheid van simulatie aanpassen
   - Randen optimaliseren
 - Neural network
-  - Afstand en tijd geven samen gecombineerd punten
   - Info over generatie bewaren in files
-  - Functie voor "fine-tuning" naar mate van tijd
-- Beeld
 
 
 ## Misschien
