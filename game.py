@@ -13,6 +13,7 @@ debug_info: list[str] = []   # Lijst met alles wat op het scherm komt te staan
 loose_cam = False            # Of de camera stilstaat of aan een auto zit
 mortal_cars = True           # Of de auto's kunnen crashen
 automatic_continue = True    # Of de volgende generatie automatisch start als de generatie klaar is
+random_roads = True          # Of de weg elke generatie moet veranderen
 
 # RGB-waarden voor de kleuren van dingen
 background_color = (100, 100, 110)
@@ -184,7 +185,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
             if automatic_continue or continue_gen:
                 gen_time = time.time()
                 cars = create_cars(car_amount, best_car.weights, best_car.biases)
-                if True:
+                if random_roads:
                     roads, middle_segments, middle_lengths, total_length = create_roads()
                 generation += 1
                 network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
