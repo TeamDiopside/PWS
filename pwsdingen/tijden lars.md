@@ -70,14 +70,15 @@
 | 18/12 | 14:35 - 16:00 | 1:25 |                          Verslag schrijven                           |
 | 18/12 | 20:15 - 23:30 | 3:15 |                          Verslag schrijven                           |
 | 20/12 | 16:00 - 17:00 | 1:00 |          Random maps, max time en biases minder veranderen           |
-| 26/01 | 21:00 - 21:30 | 0:30 |                          Verslag schrijven                           |
-| 27/01 | 14:00 - 15:45 | 1:45 |              Verslag schrijven, code blocks verbeteren               |
-| 27/01 | 17:20 - 18:30 | 1:10 |                          Verslag schrijven                           |
-| 28/01 | 16:00 - 18:15 | 2:15 |                          Verslag schrijven                           |
-| 28/01 | 19:10 - 19:20 | 0:10 |                          Verslag schrijven                           |
+| 26/1  | 21:00 - 21:30 | 0:30 |                          Verslag schrijven                           |
+| 27/1  | 14:00 - 15:45 | 1:45 |              Verslag schrijven, code blocks verbeteren               |
+| 27/1  | 17:20 - 18:30 | 1:10 |                          Verslag schrijven                           |
+| 28/1  | 16:00 - 18:15 | 2:15 |                          Verslag schrijven                           |
+| 28/1  | 19:10 - 19:20 | 0:10 |                          Verslag schrijven                           |
 | 30/1  | 15:00 - 16:45 | 1:45 |                    Verslag en praten met De Kogel                    |
 | 30/1  | 18:15 - 19:00 | 0:45 |                               Verslag                                |
 | 30/1  | 19:45 - 22:00 | 2:15 |                               Verslag                                |
 | 31/1  | 10:00 - 10:30 | 0:30 |                          Verslag schrijven                           |
+| 31/1  | 21:30 - 22:15 | 0:45 |                          Verslag schrijven                           |
 
-Totaal: 103:40
+Totaal: 104:25
