@@ -9,11 +9,11 @@ import network
 
 debug_mode = 2
 ai_enabled = True
-debug_info: list[str] = []   # Lijst met alles wat op het scherm komt te staan
-loose_cam = False            # Of de camera stilstaat of aan een auto zit
-mortal_cars = True           # Of de auto's kunnen crashen
-automatic_continue = True    # Of de volgende generatie automatisch start als de generatie klaar is
-random_roads = True          # Of de weg elke generatie moet veranderen
+debug_info: list[str] = []         # Lijst met alles wat op het scherm komt te staan
+loose_cam = False                  # Of de camera stilstaat of aan een auto zit
+mortal_cars = ai_enabled           # Of de auto's kunnen crashen
+automatic_continue = ai_enabled    # Of de volgende generatie automatisch start als de generatie klaar is
+random_roads = True                # Of de weg elke generatie moet veranderen
 
 # RGB-waarden voor de kleuren van dingen
 background_color = (100, 100, 110)
@@ -29,7 +29,7 @@ beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
 
 max_change = 0.15   # de maximale hoeveelheid die weights en biases kunnen veranderen per generatie
-max_time = 20       # de maximale tijd per generatie in seconden
+max_time = 1000       # de maximale tijd per generatie in seconden
 
 # Alle ingebouwde wegen die we kunnen aanzetten
 # built_in_map = "bslsrsrssssrsrlse"
