@@ -57,5 +57,8 @@
 | 30/1  | 15:00 - 16:45 | 1:45 |                    Verslag en praten met De Kogel                    |
 | 30/1  | 18:15 - 22:00 | 3:45 |                               Verslag                                |
 | 31/1  | 10:00 - 10:30 | 0:30 |                          Verslag schrijven                           |
+| 31/1  | 21:00 - 21:30 | 0:30 |                          Verslag schrijven                           |
+|  2/2  | 16:10 - 17:00 | 0:50 |                          Verslag schrijven                           |
+|  2/2  | 20:00 - 22:15 | 2:15 |                          Verslag schrijven                           |
 
-Totaal: 85:20
+Totaal: 88:55
