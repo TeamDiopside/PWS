@@ -60,5 +60,6 @@
 | 31/1  | 21:00 - 21:30 | 0:30 |                          Verslag schrijven                           |
 |  2/2  | 16:10 - 17:00 | 0:50 |                          Verslag schrijven                           |
 |  2/2  | 20:00 - 22:15 | 2:15 |                          Verslag schrijven                           |
+|  3/2  | 09:00 - 09:40 | 0:40 |                           Scripts en Data                            |
 
-Totaal: 88:55
+Totaal: 89:35
