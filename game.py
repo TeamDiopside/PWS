@@ -556,16 +556,16 @@ class Car:
             # Voor elke edge van elke road kijken of deze de ray snijdt
             for road in roads:
                 for edge in road.edges:
-                    e1 = Vector(edge[0], edge[1])
-                    e2 = Vector(edge[2], edge[3])
+                    edge_1 = Vector(edge[0], edge[1])
+                    edge_2 = Vector(edge[2], edge[3])
 
                     # Bereken het eindpunt van de ray op basis van de lengte en de hoek
-                    r1 = self.pos
-                    r2 = Vector(self.pos.x + math.cos(ray.angle), self.pos.y + math.sin(ray.angle))
+                    ray_1 = self.pos
+                    ray_2 = Vector(self.pos.x + math.cos(ray.angle), self.pos.y + math.sin(ray.angle))
 
-                    f_ray, f_muur, parallel = intersection(r1, r2, e1, e2)
+                    f_ray, f_edge, parallel = intersection(ray_1, ray_2, edge_1, edge_2)
 
-                    if 0 <= f_ray and 0 <= f_muur <= 1 and not parallel:
+                    if 0 <= f_ray and 0 <= f_edge <= 1 and not parallel:
                         ray.can_draw = True
                         ray.distance = min(ray.distance, f_ray)
                         ray.intersections += 1
