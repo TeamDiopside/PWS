@@ -546,8 +546,7 @@ class Car:
     # Ray casting om afstand tot de rand van de weg te detecteren
     def calc_rays(self, roads: list[Road]):
         for ray in self.rays:
-            ray.intersection = 1
-            ray.distance = ray.max_distance
+            ray.distance = 10000
             ray.can_draw = False
             ray.intersections = 0
 
@@ -556,24 +555,20 @@ class Car:
 
             # Voor elke edge van elke road kijken of deze de ray snijdt
             for road in roads:
-
                 for edge in road.edges:
-
                     e1 = Vector(edge[0], edge[1])
                     e2 = Vector(edge[2], edge[3])
 
                     # Bereken het eindpunt van de ray op basis van de lengte en de hoek
                     r1 = self.pos
-                    r2 = Vector(self.pos.x + ray.max_distance * math.cos(ray.angle),
-                                self.pos.y + ray.max_distance * math.sin(ray.angle))
+                    r2 = Vector(self.pos.x + math.cos(ray.angle), self.pos.y + math.sin(ray.angle))
 
                     f_ray, f_muur, parallel = intersection(r1, r2, e1, e2)
 
                     if 0 <= f_ray and 0 <= f_muur <= 1 and not parallel:
                         ray.can_draw = True
-                        ray.intersection = min(ray.intersection, f_ray)
+                        ray.distance = min(ray.distance, f_ray)
                         ray.intersections += 1
-                        ray.distance = ray.intersection * ray.max_distance
 
     # Bereken de afstand tot de finish door te kijken bij welke middellijn de auto zich bevindt en de lengte van de middellijnen van gepasseerde wegdelen bij elkaar op te tellen.
     def calc_distance_to_finish(self, roads: list[Road], middle_segments, middle_lengths, total_length):
@@ -700,9 +695,7 @@ class Ray:
     def __init__(self, angle):
         self.angle = angle
         self.initial_angle = angle
-        self.intersection = 1
         self.can_draw = False
-        self.max_distance = 1000
         self.distance = 0
         self.intersections = 0
 
