@@ -86,5 +86,6 @@
 |  2/2  | 20:30 - 21:00 | 0:30 |                          Verslag schrijven                           |
 |  3/2  | 14:00 - 14:30 | 0:30 |                          Verslag schrijven                           |
 |  3/2  | 16:10 - 19:45 | 3:35 |                          Verslag schrijven                           |
+|  4/2  | 12:45 - 14:00 | 1:15 |                          Verslag schrijven                           |
 
-Totaal: 111:40
+Totaal: 112:55
