@@ -98,9 +98,5 @@ def sigmoid(x):
     return 1 / (1 + numpy.exp(-x))
 
 
-def test():
-    pass
-
-
 if __name__ == '__main__':
     create_file(input("Generation name: "))

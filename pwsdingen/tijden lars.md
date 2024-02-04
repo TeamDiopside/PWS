@@ -1,6 +1,6 @@
 # Logboek Lars
 
-## 2023
+## 2023-2024
 
 |  Dag  |    Tijden     | Duur |                              Activiteit                              |
 |:-----:|:-------------:|:----:|:--------------------------------------------------------------------:|
@@ -87,5 +87,8 @@
 |  3/2  | 14:00 - 14:30 | 0:30 |                          Verslag schrijven                           |
 |  3/2  | 16:10 - 19:45 | 3:35 |                          Verslag schrijven                           |
 |  4/2  | 12:45 - 14:00 | 1:15 |                          Verslag schrijven                           |
+|  4/2  | 15:10 - 15:40 | 0:30 |               Verslag schrijven en vragen beantwoorden               |
+|  4/2  | 16:15 - 17:20 | 1:05 |                          Verslag schrijven                           |
+|  4/2  | 18:10 - 23:40 | 5:30 |                          Verslag schrijven                           |
 
-Totaal: 112:55
+Totaal: 119:30

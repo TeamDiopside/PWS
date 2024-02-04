@@ -63,6 +63,11 @@ def main():
     amount = int(input("Amount of cars: "))
     name = input("Generation name: ")
     generation = int(input("Generation: "))
+
+    if name == "debug":
+        global ai_enabled
+        ai_enabled = False
+
     go(amount, name, generation)
 
 
@@ -135,9 +140,9 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                     selected_car_index += 1
                     selected_car_index = selected_car_index % car_amount
                 if event.key == pygame.K_EQUALS:
-                    max_change += 0.01
+                    max_change *= 1.1
                 if event.key == pygame.K_MINUS:
-                    max_change -= 0.01
+                    max_change *= 0.9
                 if event.key == pygame.K_c:
                     continue_gen = True
                 if event.key == pygame.K_p:
@@ -578,24 +583,24 @@ class Car:
         for i, road in enumerate(roads):
             for j, middle_line in enumerate(road.middle_lines):
 
-                m1 = Vector(middle_line[0], middle_line[1])
-                m2 = Vector(middle_line[2], middle_line[3])
+                middle_1 = Vector(middle_line[0], middle_line[1])
+                middle_2 = Vector(middle_line[2], middle_line[3])
 
-                p1 = Vector(self.pos.x, self.pos.y)
-                p2 = p1 + (m1 - m2).rotate_90()
+                perp_1 = Vector(self.pos.x, self.pos.y)
+                perp_2 = perp_1 + (middle_1 - middle_2).rotate_90()
 
-                cross_product = (m1 - m2) * (p1 - p2)
+                cross_product = (middle_1 - middle_2) * (perp_1 - perp_2)
 
                 if cross_product != 0:
-                    f_perp = (m1 - p1) * (m1 - m2) / cross_product
-                    f_middle = (m1 - p1) * (p1 - p2) / cross_product
+                    f_perp = (middle_1 - perp_1) * (middle_1 - middle_2) / cross_product
+                    f_middle = (middle_1 - perp_1) * (perp_1 - perp_2) / cross_product
 
                     if 0 <= f_middle <= 1:
                         # De kortste afstand zit midden op een lijnstuk
-                        ints = p1 + (p2 - p1).multiply(f_perp)
+                        ints = perp_1 + (perp_2 - perp_1).multiply(f_perp)
                         if self.middle_point is not None:
-                            distance = (p1 - self.middle_point).length()
-                            new_distance = (p1 - ints).length()
+                            distance = (perp_1 - self.middle_point).length()
+                            new_distance = (perp_1 - ints).length()
                             if new_distance < distance:
                                 self.middle_point = ints
                                 self.middle = (middle_line, f_middle)
@@ -604,16 +609,16 @@ class Car:
                             self.middle = (middle_line, f_middle)
                     else:
                         # De kortste afstand zit op een hoekpunt
-                        new_distance1 = (p1 - m1).length()
-                        new_distance2 = (p1 - m2).length()
-                        closest = m1 if new_distance1 < new_distance2 else m2
+                        new_distance1 = (perp_1 - middle_1).length()
+                        new_distance2 = (perp_1 - middle_2).length()
+                        closest = middle_1 if new_distance1 < new_distance2 else middle_2
                         if self.middle_point is not None:
-                            if (p1 - closest).length() < (p1 - self.middle_point).length():
+                            if (perp_1 - closest).length() < (perp_1 - self.middle_point).length():
                                 self.middle_point = closest
-                                self.middle = (middle_line, 0 if closest == m1 else 1)
+                                self.middle = (middle_line, 0 if closest == middle_1 else 1)
                         else:
                             self.middle_point = closest
-                            self.middle = (middle_line, 0 if closest == m1 else 1)
+                            self.middle = (middle_line, 0 if closest == middle_1 else 1)
 
         segment = middle_segments.index(self.middle[0])
         previous_length = 0
