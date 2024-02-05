@@ -142,7 +142,7 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                 if event.key == pygame.K_EQUALS:
                     max_change *= 1.1
                 if event.key == pygame.K_MINUS:
-                    max_change *= 0.9
+                    max_change /= 1.1
                 if event.key == pygame.K_c:
                     continue_gen = True
                 if event.key == pygame.K_p:
