@@ -90,5 +90,6 @@
 |  4/2  | 15:10 - 15:40 | 0:30 |               Verslag schrijven en vragen beantwoorden               |
 |  4/2  | 16:15 - 17:20 | 1:05 |                          Verslag schrijven                           |
 |  4/2  | 18:10 - 23:40 | 5:30 |                          Verslag schrijven                           |
+|  5/2  | 09:10 - 09:45 | 0:35 |                          Verslag schrijven                           |
 
-Totaal: 119:30
+Totaal: 120:05
