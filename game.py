@@ -501,10 +501,10 @@ class Car:
 
         # De kleine afstand die je in deze frame kan draaien, gebaseerd op hoe snel je gaat
         x = 0.08 * abs(self.speed) - 1
-        d_rotation = 0.05 * (1 - x * x)
+        max_rotation = 0.05 * (1 - x * x)
 
         if self.speed < 0:
-            d_rotation = -d_rotation
+            max_rotation = -max_rotation
 
         reduced_angle = abs(self.movement_angle % (0.5 * math.pi) - 0.25 * math.pi)
         add_rounded_debug_info("Reduced Angle: ", reduced_angle)
@@ -520,15 +520,15 @@ class Car:
             gas = outputs[1] * 2 - 1
 
             # De outputs gebruiken
-            self.angle += d_rotation * steering * delta_time
+            self.angle += max_rotation * steering * delta_time
             self.speed += acceleration * -gas * delta_time
 
         if cars.index(self) == selected_car_index and not ai_enabled:
             active_keys = pygame.key.get_pressed()
             if active_keys[pygame.K_a]:
-                self.angle += d_rotation * delta_time
+                self.angle += max_rotation * delta_time
             if active_keys[pygame.K_d]:
-                self.angle -= d_rotation * delta_time
+                self.angle -= max_rotation * delta_time
             if active_keys[pygame.K_w]:
                 self.speed += acceleration * delta_time
             if active_keys[pygame.K_s]:
