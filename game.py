@@ -114,7 +114,7 @@ def versus():
     name = input("Generation name: ")
     generation = int(input("Generation: "))
     allow_switch_cars = False
-    max_time_enabled = False # In principe, je zou er natuurlijk een tijdslimiet aan kunnen gooien
+    max_time_enabled = False  # In principe, je zou er natuurlijk een tijdslimiet aan kunnen gooien
 
     weights, biases = network.get_network_from_file(name, generation)
     game(ai_car_amount, player_car_amount, weights, biases, name, generation)
