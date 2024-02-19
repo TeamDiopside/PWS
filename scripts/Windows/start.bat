@@ -1,2 +1,2 @@
 cd ../../
-python game.py
+python game.py training

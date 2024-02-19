@@ -1,5 +1,6 @@
 import math
 import random
+import sys
 import time
 
 import numpy
@@ -8,12 +9,15 @@ import pygame
 import network
 
 debug_mode = 2
-ai_enabled = True
-debug_info: list[str] = []         # Lijst met alles wat op het scherm komt te staan
-loose_cam = False                  # Of de camera stilstaat of aan een auto zit
-mortal_cars = ai_enabled           # Of de auto's kunnen crashen
-automatic_continue = ai_enabled    # Of de volgende generatie automatisch start als de generatie klaar is
-random_roads = True                # Of de weg elke generatie moet veranderen
+debug_info: list[str] = []          # Lijst met alles wat op het scherm komt te staan
+loose_cam = False                   # Of de camera stilstaat of aan een auto zit
+mortal_cars = True                  # Of de auto's kunnen crashen
+automatic_continue = True           # Of de volgende generatie automatisch start als de generatie klaar is
+max_time_enabled = True             # Of er een maximale tijd is
+allow_switch_cars = True            # Of je van auto mag wisselen
+random_roads = True                 # Of de weg elke generatie moet veranderen
+gamemodes = ["training", "versus"]  # Beschikbare gamemodes
+gamemode = ""                       # Gamemode
 
 # RGB-waarden voor de kleuren van dingen
 background_color = (100, 100, 110)
@@ -59,26 +63,63 @@ training_maps = [
 
 
 # Inputs in de console zetten
-def main():
-    amount = int(input("Amount of cars: "))
-    name = input("Generation name: ")
-    generation = int(input("Generation: "))
+def main(game_mode):
+    if game_mode == "":
+        game_mode = select_gamemode()
 
-    if name == "debug":
-        global ai_enabled
-        ai_enabled = False
+    global gamemode
+    gamemode = game_mode
 
-    go(amount, name, generation)
+    if gamemode == "training":
+        training()
+    elif gamemode == "versus":
+        versus()
+
+
+def select_gamemode():
+    game_mode = str(input("Gamemode: "))
+    if game_mode not in gamemodes:
+        print("Not a valid gamemode, please try again!")
+        return select_gamemode()
+    return game_mode
 
 
 # Weights en biases uit een file halen en de simulatie starten
-def go(amount, name, generation):
+def training():
+    player_car_amount = 0
+    ai_car_amount = int(input("Amount of cars: "))
+    name = input("Generation name: ")
+
+    if name == "debug":
+        global mortal_cars
+        global automatic_continue
+        player_car_amount = ai_car_amount
+        ai_car_amount = 0
+        mortal_cars = False
+        automatic_continue = False
+        generation = 0
+    else:
+        generation = int(input("Generation: "))
+
     weights, biases = network.get_network_from_file(name, generation)
-    game(amount, weights, biases, name, generation)
+    game(ai_car_amount, player_car_amount, weights, biases, name, generation)
+
+
+# Weights en biases uit een file halen en de simulatie starten
+def versus():
+    global allow_switch_cars
+    player_car_amount = 1
+    ai_car_amount = int(input("Amount of AI cars: "))
+    name = input("Generation name: ")
+    generation = int(input("Generation: "))
+    allow_switch_cars = False
+
+    weights, biases = network.get_network_from_file(name, generation)
+    game(ai_car_amount, player_car_amount, weights, biases, name, generation)
 
 
 # De simulatie: beginwaarden en de loop
-def game(car_amount, starting_weights, starting_biases, name, generation):
+def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, name, generation):
     global debug_mode, loose_cam
     pygame.init()
 
@@ -92,8 +133,13 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
     frame = 1
     gen_time = time.time()
 
+    total_car_amount = ai_car_amount + player_car_amount
+
     # De lijst met auto's maken
-    cars: list[Car] = create_cars(car_amount, starting_weights, starting_biases)
+    cars: list[Car] = create_cars_player(player_car_amount)
+    if ai_car_amount > 0:
+        for car in create_cars_ai(ai_car_amount, starting_weights, starting_biases):
+            cars.append(car)
     selected_car_index = 0
 
     cam = Camera(0, 0.001)
@@ -133,12 +179,12 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                     debug_mode = 6
                 if event.key == pygame.K_e:
                     loose_cam = not loose_cam
-                if event.key == pygame.K_LEFTBRACKET:
+                if event.key == pygame.K_LEFTBRACKET and allow_switch_cars:
                     selected_car_index -= 1
-                    selected_car_index = selected_car_index % car_amount
-                if event.key == pygame.K_RIGHTBRACKET:
+                    selected_car_index = selected_car_index % total_car_amount
+                if event.key == pygame.K_RIGHTBRACKET and allow_switch_cars:
                     selected_car_index += 1
-                    selected_car_index = selected_car_index % car_amount
+                    selected_car_index = selected_car_index % total_car_amount
                 if event.key == pygame.K_EQUALS:
                     max_change *= 1.1
                 if event.key == pygame.K_MINUS:
@@ -168,13 +214,44 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                 car.move(cars, selected_car_index, delta_time)
 
                 # Crashen als de ray een even aantal lijnen tegenkomt of als de tijd op is
-                if car.rays[0].intersections % 2 == 0 and mortal_cars or time.time() - gen_time > max_time:
+                if (car.rays[0].intersections % 2 == 0 or (time.time() - gen_time > max_time and max_time_enabled)) and mortal_cars:
                     car.crash(roads, middle_segments, middle_lengths, total_length, gen_time)
             else:
                 alive_cars -= 1
 
         # De volgende generatie starten als alle auto's gecrasht zijn en uitzoeken wie de winnaar is
-        if alive_cars <= 0:
+        if alive_cars <= 0 < ai_car_amount and gamemode == "training":
+            best_car = Car(False, None, None)
+            for car in cars:
+                if car.is_ai:
+                    best_car = car
+            finished_cars = []
+            for car in cars:
+                if car.distance_traveled > best_car.distance_traveled and car.is_ai:
+                    best_car = car
+                if car.distance_traveled > 0.99:
+                    finished_cars.append(car)
+
+            for car in finished_cars:
+                if car.finished_time < best_car.finished_time and car.is_ai:
+                    best_car = car
+
+            if automatic_continue or continue_gen:
+                gen_time = time.time()
+                cars = create_cars_player(player_car_amount)
+                for car in create_cars_ai(ai_car_amount, best_car.weights, best_car.biases):
+                    cars.append(car)
+                if random_roads:
+                    roads, middle_segments, middle_lengths, total_length = create_roads()
+                generation += 1
+                network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
+        elif alive_cars <= 0 and (automatic_continue or continue_gen) and ai_car_amount == 0:
+            gen_time = time.time()
+            cars = create_cars_player(player_car_amount)
+            if random_roads:
+                roads, middle_segments, middle_lengths, total_length = create_roads()
+            generation += 1
+        elif alive_cars <= 0 and gamemode == "versus":
             best_car = cars[0]
             finished_cars = []
             for car in cars:
@@ -187,13 +264,14 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
                 if car.finished_time < best_car.finished_time:
                     best_car = car
 
+            print(f"Car {cars.index(best_car)} Won!")
             if automatic_continue or continue_gen:
                 gen_time = time.time()
-                cars = create_cars(car_amount, best_car.weights, best_car.biases)
+                for n, car in enumerate(cars):
+                    cars[n] = Car(car.is_ai, car.weights, car.biases)
                 if random_roads:
                     roads, middle_segments, middle_lengths, total_length = create_roads()
                 generation += 1
-                network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
 
         if loose_cam:
             cam.move()
@@ -226,15 +304,22 @@ def game(car_amount, starting_weights, starting_biases, name, generation):
         clock.tick()
 
 
-def create_cars(amount, weights, biases):
+def create_cars_ai(amount, weights, biases):
     # Altijd de beste auto weer in de volgende generatie stoppen
-    cars = [Car(weights, biases)]
+    cars = [Car(True, weights, biases)]
 
     # Het neural network aanpassen voor alle andere auto's
     for i in range(amount - 1):
         changed_weights = network.change_weights(weights, max_change)
         changed_biases = network.change_biases(biases, max_change / 3)
-        cars.append(Car(changed_weights, changed_biases))
+        cars.append(Car(True, changed_weights, changed_biases))
+    return cars
+
+
+def create_cars_player(amount):
+    cars = []
+    for i in range(amount):
+        cars.append(Car(False, None, None))
     return cars
 
 
@@ -475,7 +560,7 @@ def rotate_vector(vector, angle):
 
 
 class Car:
-    def __init__(self, weights, biases):
+    def __init__(self, is_ai, weights, biases):
         self.weights = weights
         self.biases = biases
         self.pos = Vector(200, 0.3)
@@ -488,6 +573,7 @@ class Car:
         self.distance_traveled = 0
         self.on_road = True
         self.finished_time = 0
+        self.is_ai = is_ai
 
         self.rays: list[Ray] = []
         for ray_angle in range(180, 361, 30):
@@ -509,7 +595,7 @@ class Car:
         reduced_angle = abs(self.movement_angle % (0.5 * math.pi) - 0.25 * math.pi)
         add_rounded_debug_info("Reduced Angle: ", reduced_angle)
 
-        if ai_enabled:
+        if self.is_ai:
             inputs = [self.speed, reduced_angle]
             for ray in self.rays:  # Alle rays aan de inputlijst toevoegen
                 inputs.append(ray.distance)
@@ -523,7 +609,7 @@ class Car:
             self.angle += max_rotation * steering * delta_time
             self.speed += acceleration * -gas * delta_time
 
-        if cars.index(self) == selected_car_index and not ai_enabled:
+        if cars.index(self) == selected_car_index and not self.is_ai:
             active_keys = pygame.key.get_pressed()
             if active_keys[pygame.K_a]:
                 self.angle += max_rotation * delta_time
@@ -744,6 +830,11 @@ def clear_debug_info():
 
 # Eerste wat er gebeurt als je de code uitvoert, voert main() uit (bovenaan de code)
 if __name__ == '__main__':
-    main()
+    gamemode = ""
+    if "training" in sys.argv:
+        gamemode = "training"
+    elif "versus" in sys.argv:
+        gamemode = "versus"
+    main(gamemode)
     # cProfile.run("main()")
     # start(3, "alpha", 0)
