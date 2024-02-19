@@ -49,7 +49,7 @@ def change_weights(all_weights: list[list[list]], max_change):
         for y in x:
             list2 = []
             for z in y:
-                list2.append(z + (random.random() * 2 - 1) * max_change)
+                list2.append(z + numpy.random.normal(0, max_change))
             list1.append(list2)
         new_weights.append(list1)
 
@@ -62,7 +62,7 @@ def change_biases(all_biases, max_change):
     for x in all_biases:
         list1 = []
         for y in x:
-            list1.append(y + (random.random() * 2 - 1) * max_change)
+            list1.append(y + numpy.random.normal(0, max_change))
         new_biases.append(list1)
     return new_biases
 
