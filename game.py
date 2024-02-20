@@ -7,6 +7,7 @@ import numpy
 import pygame
 
 import network
+import udp
 
 debug_mode = 2
 debug_info: list[str] = []          # Lijst met alles wat op het scherm komt te staan
@@ -18,6 +19,9 @@ allow_switch_cars = True            # Of je van auto mag wisselen
 random_roads = True                 # Of de weg elke generatie moet veranderen
 gamemodes = ["training", "versus"]  # Beschikbare gamemodes
 gamemode = ""                       # Gamemode
+match_started = False               # Of de race gestart is (vs mode)
+start_initiated = False             # Of de start sequence bezig is (vs mode)
+button_pressed = False              # Fysieke start button (vs mode)
 
 # RGB-waarden voor de kleuren van dingen
 background_color = (100, 100, 110)
@@ -31,6 +35,14 @@ straight_road = pygame.image.load("assets/road_straight.png")
 turn_road = pygame.image.load("assets/road_turn.png")
 beginning_road = pygame.image.load("assets/road_beginning.png")
 end_road = pygame.image.load("assets/road_end.png")
+
+starting_lights_0 = pygame.image.load("assets/start_lights_0.png")
+starting_lights_1 = pygame.image.load("assets/start_lights_1.png")
+starting_lights_2 = pygame.image.load("assets/start_lights_2.png")
+starting_lights_3 = pygame.image.load("assets/start_lights_3.png")
+starting_lights_4 = pygame.image.load("assets/start_lights_4.png")
+
+current_lights = starting_lights_0
 
 max_change = 0.15   # de maximale hoeveelheid die weights en biases kunnen veranderen per generatie
 max_time = 10       # de maximale tijd per generatie in seconden
@@ -86,6 +98,8 @@ def select_gamemode():
 
 # Weights en biases uit een file halen en de simulatie starten
 def training():
+    global match_started
+    match_started = True
     player_car_amount = 0
     ai_car_amount = int(input("Amount of cars: "))
     name = input("Generation name: ")
@@ -107,17 +121,16 @@ def training():
 
 # Weights en biases uit een file halen en de simulatie starten
 def versus():
+    open("data/button_integration_data", 'w').writelines("false")
     global allow_switch_cars
     global max_time_enabled
-    player_car_amount = 1
-    ai_car_amount = int(input("Amount of AI cars: "))
     name = input("Generation name: ")
     generation = int(input("Generation: "))
     allow_switch_cars = False
     max_time_enabled = False  # In principe, je zou er natuurlijk een tijdslimiet aan kunnen gooien
 
     weights, biases = network.get_network_from_file(name, generation)
-    game(ai_car_amount, player_car_amount, weights, biases, name, generation)
+    game(1, 1, weights, biases, name, generation)
 
 
 # De simulatie: beginwaarden en de loop
@@ -159,6 +172,10 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
 
         global max_change
         global max_time
+        global match_started
+        global current_lights
+        global start_initiated
+        global button_pressed
         continue_gen = False
         for event in pygame.event.get():
             # Afsluiten als je op het kruisje drukt
@@ -197,12 +214,29 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     max_time += 1
                 if event.key == pygame.K_o:
                     max_time -= 1
+                if event.key == pygame.K_r and not start_initiated and not match_started:
+                    start_initiated = True
+                    gen_time = time.time() + 4
+                if event.key == pygame.K_b and gamemode == "versus":
+                    udp.broadcast()
+
+        if gamemode == "versus":
+            with open("data/button_integration_data", 'r') as button_integration_data:
+                if "true" in button_integration_data.read():
+                    button_pressed = True
+                    button_integration_data.close()
+                    open("data/button_integration_data", 'w').writelines("false")
+            if button_pressed and not start_initiated and not match_started:
+                button_pressed = False
+                start_initiated = True
+                gen_time = time.time() + 4
 
         # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
         debug_info.append(f"FPS: {int(clock.get_fps())}")
         debug_info.append(f"Generation: {name} {generation}")
         add_rounded_debug_info(f"Time: ", time.time() - gen_time)
-        add_rounded_debug_info(f"Max Change: ", max_change)
+        if gamemode == "training":
+            add_rounded_debug_info(f"Max Change: ", max_change)
 
         selected_car = cars[selected_car_index]
         selected_car.add_debug_info(selected_car_index)
@@ -252,28 +286,26 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
             cars = create_cars_player(player_car_amount)
             if random_roads:
                 roads, middle_segments, middle_lengths, total_length = create_roads()
-            generation += 1
-        elif alive_cars <= 0 and gamemode == "versus":
+        elif alive_cars < total_car_amount and gamemode == "versus":
             best_car = cars[0]
-            finished_cars = []
             for car in cars:
-                if car.distance_traveled > best_car.distance_traveled:
-                    best_car = car
                 if car.distance_traveled > 0.99:
-                    finished_cars.append(car)
-
-            for car in finished_cars:
-                if car.finished_time < best_car.finished_time:
                     best_car = car
 
-            print(f"Car {cars.index(best_car)} Won!")
+            if cars.index(best_car) == 0:
+                print(f"You Won!")
+            else:
+                print(f"You've Lost!")
+
             if automatic_continue or continue_gen:
+                button_pressed = False
+                match_started = False
+                current_lights = starting_lights_0
                 gen_time = time.time()
                 for n, car in enumerate(cars):
                     cars[n] = Car(car.is_ai, car.weights, car.biases)
                 if random_roads:
                     roads, middle_segments, middle_lengths, total_length = create_roads()
-                generation += 1
 
         if loose_cam:
             cam.move()
@@ -286,6 +318,18 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
 
         # Maak scherm grijs
         screen.fill(background_color)
+
+        if start_initiated:
+            if time.time() - gen_time > 0:
+                current_lights = starting_lights_4
+                match_started = True
+                start_initiated = False
+            elif time.time() - gen_time > -1:
+                current_lights = starting_lights_3
+            elif time.time() - gen_time > -2:
+                current_lights = starting_lights_2
+            elif time.time() - gen_time > -3:
+                current_lights = starting_lights_1
 
         for i, road in enumerate(roads):
             if debug_mode != 6:
@@ -534,6 +578,8 @@ class Road:
             image = pygame.transform.rotate(end_road, -self.angle)
 
         screen.blit(image, image.get_rect(center=destination))
+        if self.road_type == "b":
+            screen.blit(current_lights, image.get_rect(center=(destination[0] + 10, destination[1] - 120)))
 
         # Als debugmodus 3 aan staat ook de middelpunten en randen tekenen
         if debug_mode == 3:
@@ -568,8 +614,12 @@ class Car:
         self.pos = Vector(200, 0.3)
         self.angle = math.pi * -0.5
         self.speed = 0
-        self.image = pygame.image.load("assets/red_car.png")
+        if is_ai:
+            self.image = pygame.image.load("assets/red_car.png")
+        else:
+            self.image = pygame.image.load("assets/blue_car.png")
         self.movement_angle = math.pi * -0.5
+        self.reduced_angle = abs(self.movement_angle % (0.5 * math.pi) - 0.25 * math.pi)
         self.middle_point: Vector = Vector(0, 0)
         self.middle = (0, 0, 0)
         self.distance_traveled = 0
@@ -594,11 +644,10 @@ class Car:
         if self.speed < 0:
             max_rotation = -max_rotation
 
-        reduced_angle = abs(self.movement_angle % (0.5 * math.pi) - 0.25 * math.pi)
-        add_rounded_debug_info("Reduced Angle: ", reduced_angle)
+        self.reduced_angle = abs(self.movement_angle % (0.5 * math.pi) - 0.25 * math.pi)
 
-        if self.is_ai:
-            inputs = [self.speed, reduced_angle]
+        if self.is_ai and match_started:
+            inputs = [self.speed, self.reduced_angle]
             for ray in self.rays:  # Alle rays aan de inputlijst toevoegen
                 inputs.append(ray.distance)
             outputs = network.calculate(self.weights, self.biases, inputs)
@@ -611,7 +660,7 @@ class Car:
             self.angle += max_rotation * steering * delta_time
             self.speed += acceleration * -gas * delta_time
 
-        if cars.index(self) == selected_car_index and not self.is_ai:
+        if cars.index(self) == selected_car_index and not self.is_ai and match_started:
             active_keys = pygame.key.get_pressed()
             if active_keys[pygame.K_a]:
                 self.angle += max_rotation * delta_time
@@ -632,9 +681,20 @@ class Car:
 
     # Wanneer de auto van de weg af raakt, wordt de tijd opgeslagen en de afgelegde afstand berekend
     def crash(self, roads, middle_segments, middle_lengths, total_length, gen_time):
-        self.on_road = False
-        self.finished_time = time.time() - gen_time
-        self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
+        if gamemode == "training":
+            self.on_road = False
+            self.finished_time = time.time() - gen_time
+            self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
+        elif gamemode == "versus":
+            self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
+            if self.distance_traveled > 0.99:
+                self.on_road = False
+                self.finished_time = time.time() - gen_time
+            else:
+                self.pos = Vector(200, 0.3)
+                self.angle = math.pi * -0.5
+                self.speed = 0
+                self.distance_traveled = 0
 
     # Ray casting om afstand tot de rand van de weg te detecteren
     def calc_rays(self, roads: list[Road]):
@@ -757,6 +817,7 @@ class Car:
         debug_info.append(f"AUTO {index + 1}")
         add_rounded_debug_info("X: ", self.pos.x)
         add_rounded_debug_info("Y: ", self.pos.y)
+        add_rounded_debug_info("Reduced Angle: ", self.reduced_angle)
 
         if self.on_road:
             add_rounded_debug_info("Snelheid: ", self.speed)
