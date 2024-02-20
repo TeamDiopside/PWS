@@ -198,6 +198,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     debug_mode = 6
                 if event.key == pygame.K_e:
                     loose_cam = not loose_cam
+                if event.key == pygame.K_F11 and debug_mode != 1:  # Beetje experimenteel en mensen moeten er tijdens de pws avond niet uit dus debug mode
+                    pygame.display.toggle_fullscreen()
                 if event.key == pygame.K_LEFTBRACKET and allow_switch_cars:
                     selected_car_index -= 1
                     selected_car_index = selected_car_index % total_car_amount
@@ -293,9 +295,9 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     best_car = car
 
             if cars.index(best_car) == 0:
-                print(f"You Won!")
+                print(f"You won in {best_car.finished_time} seconds!")
             else:
-                print(f"You've Lost!")
+                print(f"AI won in {best_car.finished_time} seconds")
 
             if automatic_continue or continue_gen:
                 button_pressed = False
