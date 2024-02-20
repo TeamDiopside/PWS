@@ -9,7 +9,7 @@ import pygame
 import network
 import udp
 
-debug_mode = 2
+debug_mode = 1
 debug_info: list[str] = []          # Lijst met alles wat op het scherm komt te staan
 loose_cam = False                   # Of de camera stilstaat of aan een auto zit
 mortal_cars = True                  # Of de auto's kunnen crashen
@@ -217,7 +217,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 if event.key == pygame.K_r and not start_initiated and not match_started:
                     start_initiated = True
                     gen_time = time.time() + 4
-                if event.key == pygame.K_b and gamemode == "versus":
+                if event.key == pygame.K_b and gamemode == "versus" and debug_mode != 1:
                     udp.broadcast()
 
         if gamemode == "versus":
@@ -418,7 +418,7 @@ class Camera:
         self.mouse_down = Vector(0, 0)   # Waar de muis heeft geklikt
 
     def move(self):
-        acceleration = 1
+        acceleration = 0.5
 
         active_keys = pygame.key.get_pressed()
         if active_keys[pygame.K_LEFT]:
@@ -578,7 +578,7 @@ class Road:
             image = pygame.transform.rotate(end_road, -self.angle)
 
         screen.blit(image, image.get_rect(center=destination))
-        if self.road_type == "b":
+        if self.road_type == "b" and gamemode == "versus":
             screen.blit(current_lights, image.get_rect(center=(destination[0] + 10, destination[1] - 120)))
 
         # Als debugmodus 3 aan staat ook de middelpunten en randen tekenen
