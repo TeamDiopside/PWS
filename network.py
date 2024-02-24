@@ -5,9 +5,10 @@ import random
 import numpy
 
 
-def create_file(name):
-    # alle hidden layers op volgorde, eerste is input, laatste is output, getallen = aantal nodes in layer
-    layers = [9, 5, 5, 2]
+def create_file():
+    name = input("Generation name: ")
+    layers = input("Network layers: ").split()
+    layers = list(map(lambda num: int(num), layers))
 
     # lijst voor alle weight matrices
     weights: list = []
@@ -18,7 +19,7 @@ def create_file(name):
         weights.append(create_random_weights(layers[x + 1], layers[x]))
         biases.append(create_random_biases(layers[x]))
 
-    output_network_to_file(weights, biases, name, 0)
+    output_network_to_file(weights, biases, layers, name, 0)
     print("Done!")
 
 
@@ -68,8 +69,8 @@ def change_biases(all_biases, max_change):
 
 
 # weights naar json format veranderen en in een file zetten
-def output_network_to_file(weights, biases, name, generation):
-    string = json.dumps([weights, biases], indent=2)
+def output_network_to_file(weights, biases, layers, name, generation):
+    string = json.dumps([weights, biases, layers, "Generation " + name, generation], indent=2)
     if not os.path.exists(f"data/{name}"):
         os.makedirs(f"data/{name}")
     file = open(f"data/{name}/{generation}.json", "w")
@@ -82,7 +83,13 @@ def get_network_from_file(name, generation):
     file = open(f"data/{name}/{generation}.json")
     network = json.loads(file.read())
     file.close()
-    return network[0], network[1]
+
+    try:
+        layers = network[2]
+    except IndexError:
+        layers = [9, 5, 5, 2]
+
+    return network[0], network[1], layers
 
 
 def calculate(all_weights, all_biases, inputs):
@@ -99,4 +106,4 @@ def sigmoid(x):
 
 
 if __name__ == '__main__':
-    create_file(input("Generation name: "))
+    create_file()

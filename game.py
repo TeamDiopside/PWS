@@ -10,18 +10,21 @@ import network
 import udp
 
 debug_mode = 1
-debug_info: list[str] = []          # Lijst met alles wat op het scherm komt te staan
-loose_cam = False                   # Of de camera stilstaat of aan een auto zit
-mortal_cars = True                  # Of de auto's kunnen crashen
-automatic_continue = True           # Of de volgende generatie automatisch start als de generatie klaar is
-max_time_enabled = True             # Of er een maximale tijd is
-allow_switch_cars = True            # Of je van auto mag wisselen
-random_roads = True                 # Of de weg elke generatie moet veranderen
-gamemodes = ["training", "versus"]  # Beschikbare gamemodes
-gamemode = ""                       # Gamemode
-match_started = False               # Of de race gestart is (vs mode)
-start_initiated = False             # Of de start sequence bezig is (vs mode)
-button_pressed = False              # Fysieke start button (vs mode)
+debug_info: list[str] = []           # Lijst met alles wat op het scherm komt te staan
+loose_cam = False                    # Of de camera stilstaat of aan een auto zit
+mortal_cars = True                   # Of de auto's kunnen crashen
+automatic_continue = True            # Of de volgende generatie automatisch start als de generatie klaar is
+max_time_enabled = True              # Of er een maximale tijd is
+allow_switch_cars = True             # Of je van auto mag wisselen
+random_roads = True                  # Of de weg elke generatie moet veranderen
+gamemodes = ["training", "versus"]   # Beschikbare gamemodes
+gamemode = ""                        # Gamemode
+match_started = False                # Of de race gestart is (vs mode)
+start_initiated = False              # Of de start sequence bezig is (vs mode)
+button_pressed = False               # Fysieke start button (vs mode)
+use_training_maps = True             # Of de circuits voor het trainen gebruikt worden
+
+layers = []
 
 # RGB-waarden voor de kleuren van dingen
 background_color = (100, 100, 110)
@@ -75,38 +78,39 @@ training_maps = [
 
 
 # Inputs in de console zetten
-def main(game_mode):
-    if game_mode == "":
-        game_mode = select_gamemode()
-
+def main():
     global gamemode
-    gamemode = game_mode
+    if "training" in sys.argv:
+        gamemode = "training"
+    elif "versus" in sys.argv:
+        gamemode = "versus"
+    else:
+        gamemode = select_gamemode()
 
     if gamemode == "training":
-        training()
+        start_training()
     elif gamemode == "versus":
-        versus()
+        start_versus()
 
 
 def select_gamemode():
-    game_mode = str(input("Gamemode: "))
-    if game_mode not in gamemodes:
+    input_gamemode = str(input("Gamemode: "))
+    if input_gamemode not in gamemodes:
         print("Not a valid gamemode, please try again!")
         return select_gamemode()
-    return game_mode
+    return input_gamemode
 
 
 # Weights en biases uit een file halen en de simulatie starten
-def training():
-    global match_started
+def start_training():
+    global match_started, layers
     match_started = True
     player_car_amount = 0
     ai_car_amount = int(input("Amount of cars: "))
     name = input("Generation name: ")
 
     if name == "debug":
-        global mortal_cars
-        global automatic_continue
+        global mortal_cars, automatic_continue
         player_car_amount = ai_car_amount
         ai_car_amount = 0
         mortal_cars = False
@@ -115,21 +119,20 @@ def training():
     else:
         generation = int(input("Generation: "))
 
-    weights, biases = network.get_network_from_file(name, generation)
+    weights, biases, layers = network.get_network_from_file(name, generation)
     game(ai_car_amount, player_car_amount, weights, biases, name, generation)
 
 
 # Weights en biases uit een file halen en de simulatie starten
-def versus():
+def start_versus():
     open("data/button_integration_data", 'w').writelines("false")
-    global allow_switch_cars
-    global max_time_enabled
+    global allow_switch_cars, max_time_enabled, layers
     name = input("Generation name: ")
     generation = int(input("Generation: "))
     allow_switch_cars = False
     max_time_enabled = False  # In principe, je zou er natuurlijk een tijdslimiet aan kunnen gooien
 
-    weights, biases = network.get_network_from_file(name, generation)
+    weights, biases, layers = network.get_network_from_file(name, generation)
     game(1, 1, weights, biases, name, generation)
 
 
@@ -248,8 +251,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         # Voor elke auto de rays berekenen, de bewegingen berekenen en kijken of de auto gecrasht is
         for car in cars:
             if car.on_road and not continue_gen:
-                car.calc_rays(roads)
                 car.move(cars, selected_car_index, delta_time)
+                car.calc_rays(roads)
 
                 # Crashen als de ray een even aantal lijnen tegenkomt of als de tijd op is
                 if (car.rays[0].intersections % 2 == 0 or (time.time() - gen_time > max_time and max_time_enabled)) and mortal_cars:
@@ -282,7 +285,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 if random_roads:
                     roads, middle_segments, middle_lengths, total_length = create_roads()
                 generation += 1
-                network.output_network_to_file(best_car.weights, best_car.biases, name, generation)
+                network.output_network_to_file(best_car.weights, best_car.biases, layers, name, generation)
         elif alive_cars <= 0 and (automatic_continue or continue_gen) and ai_car_amount == 0:
             gen_time = time.time()
             cars = create_cars_player(player_car_amount)
@@ -379,7 +382,7 @@ def create_roads():
     direction = 0
     size = 200
 
-    selected_map = training_maps[random.randint(0, len(training_maps) - 1)]
+    selected_map = random.choice(training_maps) if use_training_maps else built_in_map
 
     for road_type in selected_map:
         simplified_direction = direction % 4
@@ -630,8 +633,9 @@ class Car:
         self.is_ai = is_ai
 
         self.rays: list[Ray] = []
-        for ray_angle in range(180, 361, 30):
-            self.rays.append(Ray(ray_angle))
+        rays_amount = layers[0] - 2
+        for i in range(rays_amount):
+            self.rays.append(Ray(180 + i * 180 / (rays_amount - 1)))
 
     # move gebeurt 60 keer per seconde, past waarden van de auto aan
     def move(self, cars, selected_car_index, delta_time):
@@ -852,8 +856,8 @@ class Ray:
         self.angle = angle
         self.initial_angle = angle
         self.can_draw = False
-        self.distance = 0
-        self.intersections = 0
+        self.distance = 10000
+        self.intersections = 1
 
     def __str__(self):
         return f"Distance: {self.distance}"
@@ -895,11 +899,6 @@ def clear_debug_info():
 
 # Eerste wat er gebeurt als je de code uitvoert, voert main() uit (bovenaan de code)
 if __name__ == '__main__':
-    gamemode = ""
-    if "training" in sys.argv:
-        gamemode = "training"
-    elif "versus" in sys.argv:
-        gamemode = "versus"
-    main(gamemode)
+    main()
     # cProfile.run("main()")
     # start(3, "alpha", 0)
