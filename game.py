@@ -151,6 +151,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
     running = True
     frame = 1
     gen_time = time.time()
+    paused_time = 0
+    paused_moment = time.time()
 
     total_car_amount = ai_car_amount + player_car_amount
 
@@ -222,6 +224,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 if event.key == pygame.K_b and gamemode == "versus" and debug_mode != 1:
                     udp.broadcast()
                 if event.key == pygame.K_SPACE:
+                    paused_moment = time.time() - paused_time
                     paused = not paused
 
         if gamemode == "versus":
@@ -239,9 +242,10 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         if paused:
             debug_info.append(f"SIMULATION PAUSED")
             debug_info.append("")
+            paused_time = time.time() - paused_moment
         debug_info.append(f"FPS: {int(clock.get_fps())}")
         debug_info.append(f"Generation: {name} {generation}")
-        add_rounded_debug_info(f"Time: ", time.time() - gen_time)
+        add_rounded_debug_info(f"Time: ", time.time() - gen_time - paused_time)
         if gamemode == "training":
             add_rounded_debug_info(f"Max Change: ", max_change)
 
@@ -258,8 +262,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     car.calc_rays(roads)
 
                     # Crashen als de ray een even aantal lijnen tegenkomt of als de tijd op is
-                    if (car.rays[0].intersections % 2 == 0 or (time.time() - gen_time > max_time and max_time_enabled)) and mortal_cars:
-                        car.crash(roads, middle_segments, middle_lengths, total_length, gen_time)
+                    if (car.rays[0].intersections % 2 == 0 or (time.time() - gen_time - paused_time > max_time and max_time_enabled)) and mortal_cars:
+                        car.crash(roads, middle_segments, middle_lengths, total_length, gen_time, paused_time)
                 else:
                     alive_cars -= 1
 
@@ -330,15 +334,15 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         screen.fill(background_color)
 
         if start_initiated:
-            if time.time() - gen_time > 0:
+            if time.time() - gen_time - paused_time > 0:
                 current_lights = starting_lights_4
                 match_started = True
                 start_initiated = False
-            elif time.time() - gen_time > -1:
+            elif time.time() - gen_time - paused_time > -1:
                 current_lights = starting_lights_3
-            elif time.time() - gen_time > -2:
+            elif time.time() - gen_time - paused_time > -2:
                 current_lights = starting_lights_2
-            elif time.time() - gen_time > -3:
+            elif time.time() - gen_time - paused_time > -3:
                 current_lights = starting_lights_1
 
         for i, road in enumerate(roads):
@@ -685,16 +689,16 @@ class Car:
         self.pos.y += -math.cos(self.movement_angle) * self.speed * delta_time
 
     # Wanneer de auto van de weg af raakt, wordt de tijd opgeslagen en de afgelegde afstand berekend
-    def crash(self, roads, middle_segments, middle_lengths, total_length, gen_time):
+    def crash(self, roads, middle_segments, middle_lengths, total_length, gen_time, paused_time):
         if gamemode == "training":
             self.on_road = False
-            self.finished_time = time.time() - gen_time
+            self.finished_time = time.time() - gen_time - paused_time
             self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
         elif gamemode == "versus":
             self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)
             if self.distance_traveled > 0.99:
                 self.on_road = False
-                self.finished_time = time.time() - gen_time
+                self.finished_time = time.time() - gen_time - paused_time
             else:
                 self.pos = Vector(200, 0.3)
                 self.angle = math.pi * -0.5
