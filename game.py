@@ -221,6 +221,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 if event.key == pygame.K_r and not start_initiated and not match_started:
                     start_initiated = True
                     gen_time = time.time() + 4
+                    paused_moment = time.time()
+                    paused_time = 0
                 if event.key == pygame.K_b and gamemode == "versus" and debug_mode != 1:
                     udp.broadcast()
                 if event.key == pygame.K_SPACE:
@@ -237,6 +239,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 button_pressed = False
                 start_initiated = True
                 gen_time = time.time() + 4
+                paused_moment = time.time()
+                paused_time = 0
 
         # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
         if paused:
@@ -287,6 +291,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
 
                 if automatic_continue or continue_gen:
                     gen_time = time.time()
+                    paused_time = 0
                     cars = create_cars_player(player_car_amount)
                     for car in create_cars_ai(ai_car_amount, best_car.weights, best_car.biases):
                         cars.append(car)
@@ -297,6 +302,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
 
             elif alive_cars <= 0 and (automatic_continue or continue_gen) and ai_car_amount == 0:
                 gen_time = time.time()
+                paused_time = 0
                 cars = create_cars_player(player_car_amount)
                 if random_roads:
                     roads, middle_segments, middle_lengths, total_length = create_roads()
@@ -317,6 +323,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     match_started = False
                     current_lights = starting_lights_0
                     gen_time = time.time()
+                    paused_time = 0
                     for n, car in enumerate(cars):
                         cars[n] = Car(car.is_ai, car.weights, car.biases)
                     if random_roads:
