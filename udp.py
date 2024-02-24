@@ -1,3 +1,4 @@
+import os
 import socket
 
 
@@ -27,7 +28,15 @@ def broadcast():
         sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM, socket.IPPROTO_UDP)
         sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         sock.bind((ip, 4210))
-        sock.sendto(msg, ("255.255.255.255", 4210))
+        message_send = False
+        if os.path.exists("data/knop.txt"):
+            for i in range(3):
+                if str(i+1) in open("data/knop.txt", "r").read():
+                    sock.sendto(msg, (f"192.168.5.20{i+1}", 4210))
+                    print(f"Send to knop {i+1}")
+                    message_send = True
+        if not message_send:
+            sock.sendto(msg, ("255.255.255.255", 4210))
         sock.close()
 
 
