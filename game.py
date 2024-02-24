@@ -23,6 +23,7 @@ match_started = False                # Of de race gestart is (vs mode)
 start_initiated = False              # Of de start sequence bezig is (vs mode)
 button_pressed = False               # Fysieke start button (vs mode)
 use_training_maps = True             # Of de circuits voor het trainen gebruikt worden
+paused = False                       # Paus
 
 layers = []
 
@@ -173,12 +174,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         # hiermee kunnen we de bewegingen met verschillende FPS gelijk laten lopen
         delta_time = clock.get_time() / 16.6667
 
-        global max_change
-        global max_time
-        global match_started
-        global current_lights
-        global start_initiated
-        global button_pressed
+        global max_change, max_time, match_started, current_lights, start_initiated, button_pressed, paused
+
         continue_gen = False
         for event in pygame.event.get():
             # Afsluiten als je op het kruisje drukt
@@ -224,93 +221,91 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     gen_time = time.time() + 4
                 if event.key == pygame.K_b and gamemode == "versus" and debug_mode != 1:
                     udp.broadcast()
+                if event.key == pygame.K_SPACE:
+                    paused = not paused
 
-        if gamemode == "versus":
-            with open("data/button_integration_data", 'r') as button_integration_data:
-                if "true" in button_integration_data.read():
-                    button_pressed = True
-                    button_integration_data.close()
-                    open("data/button_integration_data", 'w').writelines("false")
-            if button_pressed and not start_initiated and not match_started:
-                button_pressed = False
-                start_initiated = True
-                gen_time = time.time() + 4
+        if not paused:
+            if gamemode == "versus":
+                with open("data/button_integration_data", 'r') as button_integration_data:
+                    if "true" in button_integration_data.read():
+                        button_pressed = True
+                        button_integration_data.close()
+                        open("data/button_integration_data", 'w').writelines("false")
+                if button_pressed and not start_initiated and not match_started:
+                    button_pressed = False
+                    start_initiated = True
+                    gen_time = time.time() + 4
 
-        # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
-        debug_info.append(f"FPS: {int(clock.get_fps())}")
-        debug_info.append(f"Generation: {name} {generation}")
-        add_rounded_debug_info(f"Time: ", time.time() - gen_time)
-        if gamemode == "training":
-            add_rounded_debug_info(f"Max Change: ", max_change)
+            selected_car = cars[selected_car_index]
+            selected_car.add_debug_info(selected_car_index)
 
-        selected_car = cars[selected_car_index]
-        selected_car.add_debug_info(selected_car_index)
+            alive_cars = len(cars)
 
-        alive_cars = len(cars)
-
-        # Voor elke auto de rays berekenen, de bewegingen berekenen en kijken of de auto gecrasht is
-        for car in cars:
-            if car.on_road and not continue_gen:
-                car.move(cars, selected_car_index, delta_time)
-                car.calc_rays(roads)
-
-                # Crashen als de ray een even aantal lijnen tegenkomt of als de tijd op is
-                if (car.rays[0].intersections % 2 == 0 or (time.time() - gen_time > max_time and max_time_enabled)) and mortal_cars:
-                    car.crash(roads, middle_segments, middle_lengths, total_length, gen_time)
-            else:
-                alive_cars -= 1
-
-        # De volgende generatie starten als alle auto's gecrasht zijn en uitzoeken wie de winnaar is
-        if alive_cars <= 0 < ai_car_amount and gamemode == "training":
-            best_car = Car(False, None, None)
+            # Voor elke auto de rays berekenen, de bewegingen berekenen en kijken of de auto gecrasht is
             for car in cars:
-                if car.is_ai:
-                    best_car = car
-            finished_cars = []
-            for car in cars:
-                if car.distance_traveled > best_car.distance_traveled and car.is_ai:
-                    best_car = car
-                if car.distance_traveled > 0.99:
-                    finished_cars.append(car)
+                if car.on_road and not continue_gen:
+                    car.move(cars, selected_car_index, delta_time)
+                    car.calc_rays(roads)
 
-            for car in finished_cars:
-                if car.finished_time < best_car.finished_time and car.is_ai:
-                    best_car = car
+                    # Crashen als de ray een even aantal lijnen tegenkomt of als de tijd op is
+                    if (car.rays[0].intersections % 2 == 0 or (time.time() - gen_time > max_time and max_time_enabled)) and mortal_cars:
+                        car.crash(roads, middle_segments, middle_lengths, total_length, gen_time)
+                else:
+                    alive_cars -= 1
 
-            if automatic_continue or continue_gen:
+            # De volgende generatie starten als alle auto's gecrasht zijn en uitzoeken wie de winnaar is
+            if alive_cars <= 0 < ai_car_amount and gamemode == "training":
+                best_car = Car(False, None, None)
+                for car in cars:
+                    if car.is_ai:
+                        best_car = car
+                finished_cars = []
+                for car in cars:
+                    if car.distance_traveled > best_car.distance_traveled and car.is_ai:
+                        best_car = car
+                    if car.distance_traveled > 0.99:
+                        finished_cars.append(car)
+
+                for car in finished_cars:
+                    if car.finished_time < best_car.finished_time and car.is_ai:
+                        best_car = car
+
+                if automatic_continue or continue_gen:
+                    gen_time = time.time()
+                    cars = create_cars_player(player_car_amount)
+                    for car in create_cars_ai(ai_car_amount, best_car.weights, best_car.biases):
+                        cars.append(car)
+                    if random_roads:
+                        roads, middle_segments, middle_lengths, total_length = create_roads()
+                    generation += 1
+                    network.output_network_to_file(best_car.weights, best_car.biases, layers, name, generation)
+
+            elif alive_cars <= 0 and (automatic_continue or continue_gen) and ai_car_amount == 0:
                 gen_time = time.time()
                 cars = create_cars_player(player_car_amount)
-                for car in create_cars_ai(ai_car_amount, best_car.weights, best_car.biases):
-                    cars.append(car)
                 if random_roads:
                     roads, middle_segments, middle_lengths, total_length = create_roads()
-                generation += 1
-                network.output_network_to_file(best_car.weights, best_car.biases, layers, name, generation)
-        elif alive_cars <= 0 and (automatic_continue or continue_gen) and ai_car_amount == 0:
-            gen_time = time.time()
-            cars = create_cars_player(player_car_amount)
-            if random_roads:
-                roads, middle_segments, middle_lengths, total_length = create_roads()
-        elif alive_cars < total_car_amount and gamemode == "versus":
-            best_car = cars[0]
-            for car in cars:
-                if car.distance_traveled > 0.99:
-                    best_car = car
 
-            if cars.index(best_car) == 0:
-                print(f"You won in {best_car.finished_time} seconds!")
-            else:
-                print(f"AI won in {best_car.finished_time} seconds")
+            elif alive_cars < total_car_amount and gamemode == "versus":
+                best_car = cars[0]
+                for car in cars:
+                    if car.distance_traveled > 0.99:
+                        best_car = car
 
-            if automatic_continue or continue_gen:
-                button_pressed = False
-                match_started = False
-                current_lights = starting_lights_0
-                gen_time = time.time()
-                for n, car in enumerate(cars):
-                    cars[n] = Car(car.is_ai, car.weights, car.biases)
-                if random_roads:
-                    roads, middle_segments, middle_lengths, total_length = create_roads()
+                if cars.index(best_car) == 0:
+                    print(f"You won in {round(best_car.finished_time, 2)} seconds!")
+                else:
+                    print(f"AI won in {round(best_car.finished_time, 2)} seconds")
+
+                if automatic_continue or continue_gen:
+                    button_pressed = False
+                    match_started = False
+                    current_lights = starting_lights_0
+                    gen_time = time.time()
+                    for n, car in enumerate(cars):
+                        cars[n] = Car(car.is_ai, car.weights, car.biases)
+                    if random_roads:
+                        roads, middle_segments, middle_lengths, total_length = create_roads()
 
         if loose_cam:
             cam.move()
@@ -318,6 +313,13 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
             cam.speed = Vector(0, 0)
             cam.pos = selected_car.pos
             cam.calculate_mouse_movement()
+
+        # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
+        debug_info.append(f"FPS: {int(clock.get_fps())}")
+        debug_info.append(f"Generation: {name} {generation}")
+        add_rounded_debug_info(f"Time: ", time.time() - gen_time)
+        if gamemode == "training":
+            add_rounded_debug_info(f"Max Change: ", max_change)
 
         # --- DRAW --- hier tekenen we alles op het scherm
 
@@ -341,8 +343,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 road.draw(screen, cam)
                 road.draw_middle(screen, cam, abs(2 * i / len(roads) - 1))
 
-        for car in cars:
-            car.draw(screen, cam)
+        for i in range(len(cars)):
+            cars[-1 - i].draw(screen, cam)
 
         selected_car.draw_debug(screen, cam)
 
@@ -434,9 +436,6 @@ class Camera:
             self.speed.y -= acceleration
         if active_keys[pygame.K_DOWN]:
             self.speed.y += acceleration
-        if active_keys[pygame.K_SPACE]:
-            self.pos = Vector(0, 0)
-            self.speed = Vector(0, 0)
 
         self.calculate_mouse_movement()
 
@@ -676,9 +675,6 @@ class Car:
                 self.speed += acceleration * delta_time
             if active_keys[pygame.K_s]:
                 self.speed -= acceleration * delta_time
-            if active_keys[pygame.K_SPACE]:
-                self.pos = Vector(0, 0)
-                self.speed = 0
 
         self.movement_angle += (self.angle - self.movement_angle) * 0.1 * delta_time
 
