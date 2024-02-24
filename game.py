@@ -128,13 +128,11 @@ def start_training():
 def start_versus():
     open("data/button_integration_data", 'w').writelines("false")
     global allow_switch_cars, max_time_enabled, layers
-    name = input("Generation name: ")
-    generation = int(input("Generation: "))
     allow_switch_cars = False
     max_time_enabled = False  # In principe, je zou er natuurlijk een tijdslimiet aan kunnen gooien
 
-    weights, biases, layers = network.get_network_from_file(name, generation)
-    game(1, 1, weights, biases, name, generation)
+    weights, biases, layers = network.get_network_from_file("alpha", 1800)
+    game(1, 1, weights, biases, "alpha", 1800)
 
 
 # De simulatie: beginwaarden en de loop
@@ -153,6 +151,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
     gen_time = time.time()
     paused_time = 0
     paused_moment = time.time()
+    versus_mode_winner = ""
 
     total_car_amount = ai_car_amount + player_car_amount
 
@@ -218,7 +217,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     max_time += 1
                 if event.key == pygame.K_o:
                     max_time -= 1
-                if event.key == pygame.K_r and not start_initiated and not match_started:
+                if event.key == pygame.K_r and not start_initiated and not match_started and not current_lights == starting_lights_4:
                     start_initiated = True
                     gen_time = time.time() + 4
                     paused_moment = time.time()
@@ -313,14 +312,23 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     if car.distance_traveled > 0.99:
                         best_car = car
 
+                # Voorkomen dat verliezer bij fotofinish alsnog winnaar wordt
+                for car in cars:
+                    if car.finished_time < best_car.finished_time and car.finished_time != 0:
+                        best_car = car
+
                 if cars.index(best_car) == 0:
                     print(f"You won in {round(best_car.finished_time, 2)} seconds!")
+                    match_started = False
+                    versus_mode_winner = "player"
                 else:
                     print(f"AI won in {round(best_car.finished_time, 2)} seconds")
-
-                if automatic_continue or continue_gen:
-                    button_pressed = False
                     match_started = False
+                    versus_mode_winner = "ai"
+
+                if continue_gen:
+                    button_pressed = False
+                    versus_mode_winner = ""
                     current_lights = starting_lights_0
                     gen_time = time.time()
                     paused_time = 0
@@ -360,6 +368,19 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
 
         for i in range(len(cars)):
             cars[-1 - i].draw(screen, cam)
+
+        if versus_mode_winner == "player":
+            rect = pygame.Rect(100, 100, screen.get_width() - 200, screen.get_height() - 200)
+            rounded_rect_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+            pygame.draw.rect(rounded_rect_surface, (255, 0, 0), rounded_rect_surface.get_rect(), border_radius=20)
+            rounded_rect_surface.set_alpha(128)
+            screen.blit(rounded_rect_surface, rect)
+        elif versus_mode_winner == "ai":
+            rect = pygame.Rect(100, 100, screen.get_width() - 200, screen.get_height() - 200)
+            rounded_rect_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+            pygame.draw.rect(rounded_rect_surface, (255, 0, 0), rounded_rect_surface.get_rect(), border_radius=20)
+            rounded_rect_surface.set_alpha(128)
+            screen.blit(rounded_rect_surface, rect)
 
         selected_car.draw_debug(screen, cam)
 
