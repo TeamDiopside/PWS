@@ -224,21 +224,31 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 if event.key == pygame.K_SPACE:
                     paused = not paused
 
+        if gamemode == "versus":
+            with open("data/button_integration_data", 'r') as button_integration_data:
+                if "true" in button_integration_data.read():
+                    button_pressed = True
+                    button_integration_data.close()
+                    open("data/button_integration_data", 'w').writelines("false")
+            if button_pressed and not start_initiated and not match_started:
+                button_pressed = False
+                start_initiated = True
+                gen_time = time.time() + 4
+
+        # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
+        if paused:
+            debug_info.append(f"SIMULATION PAUSED")
+            debug_info.append("")
+        debug_info.append(f"FPS: {int(clock.get_fps())}")
+        debug_info.append(f"Generation: {name} {generation}")
+        add_rounded_debug_info(f"Time: ", time.time() - gen_time)
+        if gamemode == "training":
+            add_rounded_debug_info(f"Max Change: ", max_change)
+
+        selected_car = cars[selected_car_index]
+        selected_car.add_debug_info(selected_car_index)
+
         if not paused:
-            if gamemode == "versus":
-                with open("data/button_integration_data", 'r') as button_integration_data:
-                    if "true" in button_integration_data.read():
-                        button_pressed = True
-                        button_integration_data.close()
-                        open("data/button_integration_data", 'w').writelines("false")
-                if button_pressed and not start_initiated and not match_started:
-                    button_pressed = False
-                    start_initiated = True
-                    gen_time = time.time() + 4
-
-            selected_car = cars[selected_car_index]
-            selected_car.add_debug_info(selected_car_index)
-
             alive_cars = len(cars)
 
             # Voor elke auto de rays berekenen, de bewegingen berekenen en kijken of de auto gecrasht is
@@ -313,13 +323,6 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
             cam.speed = Vector(0, 0)
             cam.pos = selected_car.pos
             cam.calculate_mouse_movement()
-
-        # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
-        debug_info.append(f"FPS: {int(clock.get_fps())}")
-        debug_info.append(f"Generation: {name} {generation}")
-        add_rounded_debug_info(f"Time: ", time.time() - gen_time)
-        if gamemode == "training":
-            add_rounded_debug_info(f"Max Change: ", max_change)
 
         # --- DRAW --- hier tekenen we alles op het scherm
 
