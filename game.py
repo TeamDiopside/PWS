@@ -240,9 +240,10 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
 
         # Tekst aan het scherm toevoegen, dit moet elke frame opnieuw
         if paused:
-            debug_info.append(f"SIMULATION PAUSED")
-            debug_info.append("")
             paused_time = time.time() - paused_moment
+            debug_info.append("SIMULATION PAUSED")
+            add_rounded_debug_info(f"Total Time Paused: ", paused_time)
+            debug_info.append("")
         debug_info.append(f"FPS: {int(clock.get_fps())}")
         debug_info.append(f"Generation: {name} {generation}")
         add_rounded_debug_info(f"Time: ", time.time() - gen_time - paused_time)
