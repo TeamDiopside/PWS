@@ -146,6 +146,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
     info = pygame.display.Info()
     screen = pygame.display.set_mode((info.current_w * 0.75, info.current_h * 0.75), pygame.RESIZABLE)
     clock = pygame.time.Clock()
+    pygame.display.set_icon(pygame.image.load("assets/red_car.png"))
 
     pygame.display.set_caption("PWS")
 
