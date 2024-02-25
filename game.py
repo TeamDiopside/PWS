@@ -342,8 +342,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     current_lights = starting_lights_0
                     gen_time = time.time()
                     paused_time = 0
-                    for n, car in enumerate(cars):
-                        cars[n] = Car(car.is_ai, car.weights, car.biases)
+                    cars = [Car(car.is_ai, car.weights, car.biases) for car in cars]
                     if random_roads:
                         roads, edges, middle_segments, middle_lengths, total_length = create_roads()
 
@@ -1042,4 +1041,3 @@ if __name__ == '__main__':
     main()
     # cProfile.run("main()")
     # start(3, "alpha", 0)
-    # print(optimise_edges([(1, 2, 4, 2), (4, 2, 5, 2)]))

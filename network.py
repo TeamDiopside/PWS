@@ -45,28 +45,12 @@ def create_random_biases(length):
 
 # Verander de weights van de vorige generatie een klein beetje en hoop dat de auto beter is dan de vorige
 def change_weights(all_weights: list[list[list]], max_change):
-    new_weights = []
-    for x in all_weights:
-        list1 = []
-        for y in x:
-            list2 = []
-            for z in y:
-                list2.append(z + numpy.random.normal(0, max_change))
-            list1.append(list2)
-        new_weights.append(list1)
-
-    return new_weights
+    return [[[z + numpy.random.normal(0, max_change) for z in y] for y in x] for x in all_weights]
 
 
 # Verander de biases van de vorige generatie een klein beetje en hoop dat de auto beter is dan de vorige
 def change_biases(all_biases, max_change):
-    new_biases = []
-    for x in all_biases:
-        list1 = []
-        for y in x:
-            list1.append(y + numpy.random.normal(0, max_change))
-        new_biases.append(list1)
-    return new_biases
+    return [[y + numpy.random.normal(0, max_change) for y in x] for x in all_biases]
 
 
 # weights naar json format veranderen en in een file zetten
@@ -101,8 +85,8 @@ def get_highest_gen(name):
     return highest
 
 
+# Uitrekenen van layers achter elkaar
 def calculate(all_weights, all_biases, inputs):
-    # uitrekenen van layers achter elkaar
     for w, weight in enumerate(all_weights):
         inputs = numpy.matmul(weight, inputs)  # voor elke weight matrix de nieuwe inputs berekenen
         for n, number in enumerate(inputs):
