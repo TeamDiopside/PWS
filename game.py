@@ -585,7 +585,7 @@ class Camera:
         self.speed.y *= 0.95
 
         self.target_pos += self.speed
-        self.pos += (self.target_pos - self.pos) * 0.07 * delta_time
+        self.pos += (self.target_pos - self.pos) * 0.15 * delta_time
 
         debug_info.append("")
         add_rounded_debug_info("Cam X: ", self.pos.x)
