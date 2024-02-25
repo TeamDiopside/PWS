@@ -9,6 +9,7 @@ import pygame
 import network
 import udp
 
+debug = True
 debug_mode = 1
 debug_info: list[str] = []           # Lijst met alles wat op het scherm komt te staan
 loose_cam = False                    # Of de camera stilstaat of aan een auto zit
@@ -22,7 +23,7 @@ gamemode = ""                        # Gamemode
 match_started = False                # Of de race gestart is (vs mode)
 start_initiated = False              # Of de start sequence bezig is (vs mode)
 button_pressed = False               # Fysieke start button (vs mode)
-use_training_maps = True             # Of de circuits voor het trainen gebruikt worden
+use_training_maps = False            # Of de circuits voor het trainen gebruikt worden
 paused = False                       # Paus
 
 layers = []
@@ -56,11 +57,12 @@ max_time = 10       # de maximale tijd per generatie in seconden
 # built_in_map = "bssssrsslssslsssrsse"
 # built_in_map = "bsslssrsssssrssssrsrlse"
 # built_in_map = "bssrsrssssrsssslsslsrssse"
-built_in_map = "bsssrsssslssse"
+# built_in_map = "bsssrsssslssse"
 # built_in_map = "bsssssssssssrsrslsssssse"
 # built_in_map = "bsrslsslssssssssrsrsle"
 # built_in_map = "bsrslsslssslssrsrsssslrsre"
 # built_in_map = "bslsre"
+built_in_map = "be"
 
 # Alle ingebouwde maps voor het trainen
 training_maps = [
@@ -110,7 +112,7 @@ def start_training():
     ai_car_amount = int(input("Amount of cars: "))
     name = input("Generation name: ")
 
-    if name == "debug":
+    if name == "debug" or debug:
         global mortal_cars, automatic_continue
         player_car_amount = ai_car_amount
         ai_car_amount = 0
@@ -164,7 +166,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
 
     cam = Camera(0, 0.001)
 
-    roads, middle_segments, middle_lengths, total_length = create_roads()
+    roads, edges, middle_segments, middle_lengths, total_length = create_roads()
 
     # De loop die er voor zorgt dat we steeds nieuwe frames krijgen, alles wat hierin zit wordt elke frame gedaan
     while running:
@@ -263,10 +265,11 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
             for car in cars:
                 if car.on_road and not continue_gen:
                     car.move(cars, selected_car_index, delta_time)
-                    car.calc_rays(roads)
+                    car.calc_rays(edges)
 
                     # Crashen als de ray een even aantal lijnen tegenkomt of als de tijd op is
-                    if (car.rays[0].intersections % 2 == 0 or (time.time() - gen_time - paused_time > max_time and max_time_enabled)) and mortal_cars:
+                    if (car.rays[0].intersections % 2 == 0 or (
+                            time.time() - gen_time - paused_time > max_time and max_time_enabled)) and mortal_cars:
                         car.crash(roads, middle_segments, middle_lengths, total_length, gen_time, paused_time)
                 else:
                     alive_cars -= 1
@@ -295,7 +298,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     for car in create_cars_ai(ai_car_amount, best_car.weights, best_car.biases):
                         cars.append(car)
                     if random_roads:
-                        roads, middle_segments, middle_lengths, total_length = create_roads()
+                        roads, edges, middle_segments, middle_lengths, total_length = create_roads()
                     generation += 1
                     network.output_network_to_file(best_car.weights, best_car.biases, layers, name, generation)
 
@@ -304,7 +307,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                 paused_time = 0
                 cars = create_cars_player(player_car_amount)
                 if random_roads:
-                    roads, middle_segments, middle_lengths, total_length = create_roads()
+                    roads, edges, middle_segments, middle_lengths, total_length = create_roads()
 
             elif alive_cars < total_car_amount and gamemode == "versus":
                 best_car = cars[0]
@@ -335,7 +338,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     for n, car in enumerate(cars):
                         cars[n] = Car(car.is_ai, car.weights, car.biases)
                     if random_roads:
-                        roads, middle_segments, middle_lengths, total_length = create_roads()
+                        roads, edges, middle_segments, middle_lengths, total_length = create_roads()
 
         if loose_cam:
             cam.move()
@@ -365,6 +368,15 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
             if debug_mode != 6:
                 road.draw(screen, cam)
                 road.draw_middle(screen, cam, abs(2 * i / len(roads) - 1))
+
+        # Als debugmodus 3 aan staat ook de middelpunten en randen tekenen
+        if debug_mode == 3:
+            for edge in edges:
+                # pygame.draw.line(screen, edge_color, world_to_screen((edge[0], edge[1]), cam, screen),
+                #                  world_to_screen((edge[2], edge[3]), cam, screen), 5)
+                pygame.draw.line(screen, (random.randint(0, 255), 20, 50),
+                                 world_to_screen((edge[0], edge[1]), cam, screen),
+                                 world_to_screen((edge[2], edge[3]), cam, screen), 5)
 
         for i in range(len(cars)):
             cars[-1 - i].draw(screen, cam)
@@ -443,6 +455,13 @@ def create_roads():
         elif road_type == "l":
             direction -= 1
 
+    edges = []
+    for road in roads:
+        for edge in road.edges:
+            edges.append(edge)
+
+    edges = optimise_edges(edges)
+
     total_length = 0
     for road in roads:
         for segment in road.middle_lines:
@@ -451,14 +470,66 @@ def create_roads():
             middle_lengths.append(length)
             total_length += length
 
-    return roads, middle_segments, middle_lengths, total_length
+    return roads, edges, middle_segments, middle_lengths, total_length
+
+
+def optimise_edges(edges):
+    optimised = False
+    while not optimised:
+        optimised = True
+        edge_optimised = False
+        new_edges = []
+        left = 0
+        right = 1
+        while left < len(edges) - 1:
+
+            edge_left = edges[left]
+            edge_right = edges[right]
+
+            if not edge_optimised:
+                direction1 = (edge_left[0] - edge_left[2], edge_left[1] - edge_left[3])
+                direction2 = (edge_right[0] - edge_right[2], edge_right[1] - edge_right[3])
+
+                if direction2[1] == 0 and direction1[1] == 0 or direction1[0] * (direction2[1] / direction1[1]) == direction2[0]:  # Dezelfde richtingsvector
+
+                    yay = False
+                    if edge_left[0] == edge_right[0] and edge_left[1] == edge_right[1]:
+                        new_edge = (edge_left[2], edge_left[3], edge_right[2], edge_right[3])
+                        new_edges.append(new_edge)
+                        yay = True
+                    elif edge_left[0] == edge_right[2] and edge_left[1] == edge_right[3]:
+                        new_edge = (edge_left[2], edge_left[3], edge_right[0], edge_right[1])
+                        new_edges.append(new_edge)
+                        yay = True
+                    elif edge_left[2] == edge_right[0] and edge_left[3] == edge_right[1]:
+                        new_edge = (edge_left[0], edge_left[1], edge_right[2], edge_right[3])
+                        new_edges.append(new_edge)
+                        yay = True
+                    elif edge_left[2] == edge_right[2] and edge_left[3] == edge_right[3]:
+                        new_edge = (edge_left[0], edge_left[1], edge_right[0], edge_right[1])
+                        new_edges.append(new_edge)
+                        yay = True
+
+                    if yay:
+                        optimised = False
+                        edge_optimised = True
+
+            right += 1
+            if right >= len(edges) or edge_optimised:
+                left += 1
+                right = left + 1
+                if not edge_optimised:
+                    new_edges.append(edge_left)
+                edge_optimised = False
+        edges = new_edges
+    return edges
 
 
 class Camera:
     def __init__(self, x, y):
         self.pos = Vector(x, y)
         self.speed = Vector(0, 0)
-        self.mouse_down = Vector(0, 0)   # Waar de muis heeft geklikt
+        self.mouse_down = Vector(0, 0)  # Waar de muis heeft geklikt
 
     def move(self):
         acceleration = 0.5
@@ -621,12 +692,8 @@ class Road:
         if self.road_type == "b" and gamemode == "versus":
             screen.blit(current_lights, image.get_rect(center=(destination[0] + 10, destination[1] - 120)))
 
-        # Als debugmodus 3 aan staat ook de middelpunten en randen tekenen
         if debug_mode == 3:
             pygame.draw.circle(screen, edge_color, destination, 5)
-            for edge in self.edges:
-                pygame.draw.line(screen, edge_color, world_to_screen((edge[0], edge[1]), cam, screen),
-                                 world_to_screen((edge[2], edge[3]), cam, screen), 5)
 
     # Als debugmodus 4 aan staat ook de middellijn over de weg tekenen
     def draw_middle(self, screen, cam, color):
@@ -735,7 +802,7 @@ class Car:
                 self.distance_traveled = 0
 
     # Ray casting om afstand tot de rand van de weg te detecteren
-    def calc_rays(self, roads: list[Road]):
+    def calc_rays(self, edges):
         for ray in self.rays:
             ray.distance = 10000
             ray.can_draw = False
@@ -745,21 +812,20 @@ class Car:
             ray.angle = math.radians(ray.initial_angle) - self.movement_angle
 
             # Voor elke edge van elke road kijken of deze de ray snijdt
-            for road in roads:
-                for edge in road.edges:
-                    edge_1 = Vector(edge[0], edge[1])
-                    edge_2 = Vector(edge[2], edge[3])
+            for edge in edges:
+                edge_1 = Vector(edge[0], edge[1])
+                edge_2 = Vector(edge[2], edge[3])
 
-                    # Bereken het eindpunt van de ray op basis van de lengte en de hoek
-                    ray_1 = self.pos
-                    ray_2 = Vector(self.pos.x + math.cos(ray.angle), self.pos.y + math.sin(ray.angle))
+                # Bereken het eindpunt van de ray op basis van de lengte en de hoek
+                ray_1 = self.pos
+                ray_2 = Vector(self.pos.x + math.cos(ray.angle), self.pos.y + math.sin(ray.angle))
 
-                    f_ray, f_edge, parallel = intersection(ray_1, ray_2, edge_1, edge_2)
+                f_ray, f_edge, parallel = intersection(ray_1, ray_2, edge_1, edge_2)
 
-                    if 0 <= f_ray and 0 <= f_edge <= 1 and not parallel:
-                        ray.can_draw = True
-                        ray.distance = min(ray.distance, f_ray)
-                        ray.intersections += 1
+                if 0 <= f_ray and 0 <= f_edge <= 1 and not parallel:
+                    ray.can_draw = True
+                    ray.distance = min(ray.distance, f_ray)
+                    ray.intersections += 1
 
     # Bereken de afstand tot de finish door te kijken bij welke middellijn de auto zich bevindt en de lengte van de middellijnen van gepasseerde wegdelen bij elkaar op te tellen.
     def calc_distance_to_finish(self, roads: list[Road], middle_segments, middle_lengths, total_length):
@@ -934,3 +1000,4 @@ if __name__ == '__main__':
     main()
     # cProfile.run("main()")
     # start(3, "alpha", 0)
+    # print(optimise_edges([(1, 2, 4, 2), (4, 2, 5, 2)]))
