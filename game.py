@@ -151,7 +151,10 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
     gen_time = time.time()
     paused_time = 0
     paused_moment = time.time()
+
+    # Versus Mode winner spul voor het winscherm
     versus_mode_winner = ""
+    winner_time = 0
 
     total_car_amount = ai_car_amount + player_car_amount
 
@@ -318,17 +321,19 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                         best_car = car
 
                 if cars.index(best_car) == 0:
-                    print(f"You won in {round(best_car.finished_time, 2)} seconds!")
                     match_started = False
                     versus_mode_winner = "player"
+                    winner_time = round(best_car.finished_time, 2)
                 else:
-                    print(f"AI won in {round(best_car.finished_time, 2)} seconds")
                     match_started = False
                     versus_mode_winner = "ai"
+                    selected_car_index = 1  # Zet camera op AI
+                    winner_time = round(best_car.finished_time, 2)
 
                 if continue_gen:
                     button_pressed = False
                     versus_mode_winner = ""
+                    selected_car_index = 0
                     current_lights = starting_lights_0
                     gen_time = time.time()
                     paused_time = 0
@@ -338,11 +343,11 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                         roads, middle_segments, middle_lengths, total_length = create_roads()
 
         if loose_cam:
-            cam.move()
+            cam.move(delta_time)
         else:
             cam.speed = Vector(0, 0)
-            cam.pos = selected_car.pos
-            cam.calculate_mouse_movement()
+            cam.target_pos = selected_car.pos
+            cam.move(delta_time)
 
         # --- DRAW --- hier tekenen we alles op het scherm
 
@@ -369,18 +374,8 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         for i in range(len(cars)):
             cars[-1 - i].draw(screen, cam)
 
-        if versus_mode_winner == "player":
-            rect = pygame.Rect(100, 100, screen.get_width() - 200, screen.get_height() - 200)
-            rounded_rect_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-            pygame.draw.rect(rounded_rect_surface, (255, 0, 0), rounded_rect_surface.get_rect(), border_radius=20)
-            rounded_rect_surface.set_alpha(128)
-            screen.blit(rounded_rect_surface, rect)
-        elif versus_mode_winner == "ai":
-            rect = pygame.Rect(100, 100, screen.get_width() - 200, screen.get_height() - 200)
-            rounded_rect_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
-            pygame.draw.rect(rounded_rect_surface, (255, 0, 0), rounded_rect_surface.get_rect(), border_radius=20)
-            rounded_rect_surface.set_alpha(128)
-            screen.blit(rounded_rect_surface, rect)
+        if gamemode == "versus" and not versus_mode_winner == "":
+            show_versus_winner(screen, versus_mode_winner, winner_time, gen_time, paused_time)
 
         selected_car.draw_debug(screen, cam)
 
@@ -391,6 +386,41 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         frame += 1
         pygame.display.update()
         clock.tick()
+
+
+def show_versus_winner(screen, winner, finish_time, gen_time, paused_time):
+    screen_width, screen_height = screen.get_width(), screen.get_height()
+    winner_text = ""
+    if winner == "player":
+        winner_text = f"You won!"
+    elif winner == "ai":
+        winner_text = f"AI won!"
+
+    screen_color = (80, 80, 90)
+
+    rect = pygame.Rect(100, 100, screen_width - 200, screen_height - 200)
+    rounded_rect_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
+    pygame.draw.rect(rounded_rect_surface, screen_color, rounded_rect_surface.get_rect(), border_radius=20)
+    rounded_rect_surface.set_alpha(128)
+
+    font_size = int(screen_height / 15)
+    font = pygame.font.Font("assets/JetBrainsMono.ttf", font_size)
+    winner_text_render = font.render(winner_text, True, text_color)
+    time_text_render = font.render(f"{finish_time} seconds", True, text_color)
+    winner_text_rect = winner_text_render.get_rect()
+    time_text_rect = time_text_render.get_rect()
+    winner_text_rect.center = (screen_width // 2, screen_height // 2 - font_size)
+    time_text_rect.center = (screen_width // 2, screen_height // 2 + font_size)
+
+    screen.blit(rounded_rect_surface, rect)
+    screen.blit(winner_text_render, winner_text_rect)
+    screen.blit(time_text_render, time_text_rect)
+
+    if time.time() - gen_time - paused_time - finish_time > 3:
+        continue_text_render = pygame.font.Font("assets/JetBrainsMono.ttf", int(screen_height / 30)).render("Press [C] to continue", True, text_color)
+        continue_text_rect = continue_text_render.get_rect()
+        continue_text_rect.center = (screen_width // 2, screen_height // 2 + 3 * font_size)
+        screen.blit(continue_text_render, continue_text_rect)
 
 
 def create_cars_ai(amount, weights, biases):
@@ -457,10 +487,11 @@ def create_roads():
 class Camera:
     def __init__(self, x, y):
         self.pos = Vector(x, y)
+        self.target_pos = Vector(x, y)
         self.speed = Vector(0, 0)
         self.mouse_down = Vector(0, 0)   # Waar de muis heeft geklikt
 
-    def move(self):
+    def move(self, delta_time):
         acceleration = 0.5
 
         active_keys = pygame.key.get_pressed()
@@ -478,7 +509,8 @@ class Camera:
         self.speed.x *= 0.95
         self.speed.y *= 0.95
 
-        self.pos += self.speed
+        self.target_pos += self.speed
+        self.pos += (self.target_pos - self.pos) * 0.07 * delta_time
 
         debug_info.append("")
         add_rounded_debug_info("Cam X: ", self.pos.x)
@@ -487,7 +519,7 @@ class Camera:
     def calculate_mouse_movement(self):
         new_mouse = Vector(pygame.mouse.get_pos()[0], pygame.mouse.get_pos()[1])
         if pygame.mouse.get_pressed()[0]:
-            self.pos -= new_mouse - self.mouse_down
+            self.target_pos -= new_mouse - self.mouse_down
             global loose_cam
             loose_cam = True
         self.mouse_down = new_mouse
@@ -500,7 +532,10 @@ class Vector:
         self.y = y
 
     def __mul__(self, other):
-        return self.x * other.y - self.y * other.x
+        if isinstance(other, float):
+            return Vector(self.x * other, self.y * other)
+        else:
+            return self.x * other.y - self.y * other.x
 
     def __sub__(self, other):
         return Vector(self.x - other.x, self.y - other.y)
@@ -729,8 +764,9 @@ class Car:
                 self.on_road = False
                 self.finished_time = time.time() - gen_time - paused_time
             else:
-                self.pos = Vector(200, 0.3)
-                self.angle = math.pi * -0.5
+                if match_started:
+                    self.pos = Vector(200, 0.3)
+                    self.angle = math.pi * -0.5
                 self.speed = 0
                 self.distance_traveled = 0
 
