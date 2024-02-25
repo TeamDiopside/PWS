@@ -1,6 +1,7 @@
 import json
 import os
 import random
+from os import listdir
 
 import numpy
 
@@ -90,6 +91,14 @@ def get_network_from_file(name, generation):
         layers = [9, 5, 5, 2]
 
     return network[0], network[1], layers
+
+
+def get_highest_gen(name):
+    file_names = [int(f.removesuffix(".json")) for f in listdir(f"data/{name}")]
+    highest = 0
+    for gen in file_names:
+        highest = max(highest, gen)
+    return highest
 
 
 def calculate(all_weights, all_biases, inputs):

@@ -120,7 +120,8 @@ def start_training():
         automatic_continue = False
         generation = 0
     else:
-        generation = int(input("Generation: "))
+        generation_input = input("Generation: ")
+        generation = int(generation_input) if generation_input != "l" else network.get_highest_gen(name)
 
     weights, biases, layers = network.get_network_from_file(name, generation)
     game(ai_car_amount, player_car_amount, weights, biases, name, generation)
