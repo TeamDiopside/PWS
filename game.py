@@ -410,12 +410,12 @@ def show_versus_winner(screen, winner, finish_time, gen_time, paused_time):
 
     screen_color = (80, 80, 90)
 
-    rect = pygame.Rect(100, 100, screen_width - 200, screen_height - 200)
+    rect = pygame.Rect((screen_width - (screen_width / 1.64102564103))/2, (screen_height - (screen_height / 1.71428571429))/2, screen_width / 1.64102564103, screen_height / 1.71428571429)
     rounded_rect_surface = pygame.Surface(rect.size, pygame.SRCALPHA)
     pygame.draw.rect(rounded_rect_surface, screen_color, rounded_rect_surface.get_rect(), border_radius=20)
-    rounded_rect_surface.set_alpha(128)
+    rounded_rect_surface.set_alpha(200)
 
-    font_size = int(screen_height / 15)
+    font_size = int(screen_height / 10)
     font = pygame.font.Font("assets/JetBrainsMono.ttf", font_size)
     winner_text_render = font.render(winner_text, True, text_color)
     time_text_render = font.render(f"{finish_time} seconds", True, text_color)
@@ -429,9 +429,9 @@ def show_versus_winner(screen, winner, finish_time, gen_time, paused_time):
     screen.blit(time_text_render, time_text_rect)
 
     if time.time() - gen_time - paused_time - finish_time > 3:
-        continue_text_render = pygame.font.Font("assets/JetBrainsMono.ttf", int(screen_height / 30)).render("Press [C] to continue", True, text_color)
+        continue_text_render = pygame.font.Font("assets/JetBrainsMono.ttf", int(screen_height / 40)).render("Press [C] to continue", True, text_color)
         continue_text_rect = continue_text_render.get_rect()
-        continue_text_rect.center = (screen_width // 2, screen_height // 2 + 3 * font_size)
+        continue_text_rect.center = (screen_width // 2, screen_height // 2 + 4 * font_size)
         screen.blit(continue_text_render, continue_text_rect)
 
 
