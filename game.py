@@ -9,7 +9,7 @@ import pygame
 import network
 import udp
 
-debug = True
+debug = False
 debug_mode = 1
 debug_info: list[str] = []           # Lijst met alles wat op het scherm komt te staan
 loose_cam = False                    # Of de camera stilstaat of aan een auto zit
@@ -23,7 +23,7 @@ gamemode = ""                        # Gamemode
 match_started = False                # Of de race gestart is (vs mode)
 start_initiated = False              # Of de start sequence bezig is (vs mode)
 button_pressed = False               # Fysieke start button (vs mode)
-use_training_maps = False            # Of de circuits voor het trainen gebruikt worden
+use_training_maps = True             # Of de circuits voor het trainen gebruikt worden
 paused = False                       # Paus
 
 layers = []
@@ -56,13 +56,13 @@ max_time = 10       # de maximale tijd per generatie in seconden
 # built_in_map = "bslsrsrssssrsrlse"
 # built_in_map = "bssssrsslssslsssrsse"
 # built_in_map = "bsslssrsssssrssssrsrlse"
-# built_in_map = "bssrsrssssrsssslsslsrssse"
+built_in_map = "bssrsrssssrsssslsslsrssse"
 # built_in_map = "bsssrsssslssse"
 # built_in_map = "bsssssssssssrsrslsssssse"
 # built_in_map = "bsrslsslssssssssrsrsle"
 # built_in_map = "bsrslsslssslssrsrsssslrsre"
 # built_in_map = "bslsre"
-built_in_map = "be"
+# built_in_map = "be"
 
 # Alle ingebouwde maps voor het trainen
 training_maps = [
@@ -372,11 +372,11 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         # Als debugmodus 3 aan staat ook de middelpunten en randen tekenen
         if debug_mode == 3:
             for edge in edges:
-                # pygame.draw.line(screen, edge_color, world_to_screen((edge[0], edge[1]), cam, screen),
-                #                  world_to_screen((edge[2], edge[3]), cam, screen), 5)
-                pygame.draw.line(screen, (random.randint(0, 255), 20, 50),
-                                 world_to_screen((edge[0], edge[1]), cam, screen),
+                pygame.draw.line(screen, edge_color, world_to_screen((edge[0], edge[1]), cam, screen),
                                  world_to_screen((edge[2], edge[3]), cam, screen), 5)
+                # pygame.draw.line(screen, (random.randint(0, 255), 20, 50),
+                #                  world_to_screen((edge[0], edge[1]), cam, screen),
+                #                  world_to_screen((edge[2], edge[3]), cam, screen), 5)
 
         for i in range(len(cars)):
             cars[-1 - i].draw(screen, cam)
@@ -473,24 +473,25 @@ def create_roads():
     return roads, edges, middle_segments, middle_lengths, total_length
 
 
+# Voegt randen die naast elkaar zitten samen om de performance te verbeteren
 def optimise_edges(edges):
-    optimised = False
-    while not optimised:
-        optimised = True
-        edge_optimised = False
+    optimised_fully = False
+    while not optimised_fully:
+        optimised_fully = True
+        optimised_indexes = []
         new_edges = []
         left = 0
         right = 1
         while left < len(edges) - 1:
 
-            edge_left = edges[left]
-            edge_right = edges[right]
+            edge_left = tuple(map(lambda num: round(num), edges[left]))
+            edge_right = tuple(map(lambda num: round(num), edges[right]))
 
-            if not edge_optimised:
+            if left not in optimised_indexes:
                 direction1 = (edge_left[0] - edge_left[2], edge_left[1] - edge_left[3])
                 direction2 = (edge_right[0] - edge_right[2], edge_right[1] - edge_right[3])
 
-                if direction2[1] == 0 and direction1[1] == 0 or direction1[0] * (direction2[1] / direction1[1]) == direction2[0]:  # Dezelfde richtingsvector
+                if direction2[1] == 0 and direction1[1] == 0 or (direction1[1] != 0 and direction1[0] * (direction2[1] / direction1[1]) == direction2[0]):  # Dezelfde richtingsvector
 
                     yay = False
                     if edge_left[0] == edge_right[0] and edge_left[1] == edge_right[1]:
@@ -511,16 +512,19 @@ def optimise_edges(edges):
                         yay = True
 
                     if yay:
-                        optimised = False
-                        edge_optimised = True
+                        optimised_fully = False
+                        optimised_indexes.append(left)
+                        optimised_indexes.append(right)
 
             right += 1
-            if right >= len(edges) or edge_optimised:
+            if right == len(edges) or left in optimised_indexes:  # Right aangekomen bij het eind van de lijst
+                if left not in optimised_indexes:  # Is niet geoptimaliseerd dus voegen we gewoon toe aan de nieuwe
+                    new_edges.append(edge_left)
                 left += 1
                 right = left + 1
-                if not edge_optimised:
-                    new_edges.append(edge_left)
-                edge_optimised = False
+                if right == len(edges) - 1 and right not in optimised_indexes:  # De laatste moet ook nog toegevoegd worden
+                    edge_right = tuple(map(lambda num: round(num), edges[right]))
+                    new_edges.append(edge_right)
         edges = new_edges
     return edges
 
