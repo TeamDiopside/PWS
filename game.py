@@ -226,7 +226,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     max_time -= 1
                 if event.key == pygame.K_r and not start_initiated and not match_started and not current_lights == starting_lights_4:
                     start_initiated = True
-                    gen_time = time.time() + 4
+                    gen_time = time.time() + 3
                     paused_moment = time.time()
                     paused_time = 0
                 if event.key == pygame.K_b and gamemode == "versus" and debug_mode != 1:
@@ -241,10 +241,10 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     button_pressed = True
                     button_integration_data.close()
                     open("data/button_integration_data", 'w').writelines("false")
-            if button_pressed and not start_initiated and not match_started:
+            if button_pressed and not start_initiated and not match_started and not current_lights == starting_lights_4:
                 button_pressed = False
                 start_initiated = True
-                gen_time = time.time() + 4
+                gen_time = time.time() + 3
                 paused_moment = time.time()
                 paused_time = 0
 
