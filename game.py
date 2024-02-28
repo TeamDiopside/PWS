@@ -82,7 +82,11 @@ training_maps = [
 
 # Inputs in de console zetten
 def main():
-    global gamemode
+    global gamemode, debug
+
+    if "debug" in sys.argv:
+        debug = True
+
     if "training" in sys.argv:
         gamemode = "training"
     elif "versus" in sys.argv:
@@ -109,13 +113,15 @@ def start_training():
     global match_started, layers
     match_started = True
     player_car_amount = 0
-    ai_car_amount = int(input("Amount of cars: "))
-    name = input("Generation name: ")
+    ai_car_amount = 0
+    name = "debug"
+    if not debug:
+        ai_car_amount = int(input("Amount of cars: "))
+        name = input("Generation name: ")
 
     if name == "debug" or debug:
         global mortal_cars, automatic_continue
-        player_car_amount = ai_car_amount
-        ai_car_amount = 0
+        player_car_amount = 1
         mortal_cars = False
         automatic_continue = False
         generation = 0
