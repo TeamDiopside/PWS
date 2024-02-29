@@ -11,20 +11,20 @@ import udp
 
 debug = False
 debug_mode = 1
-debug_info: list[str] = []           # Lijst met alles wat op het scherm komt te staan
-loose_cam = False                    # Of de camera stilstaat of aan een auto zit
-mortal_cars = True                   # Of de auto's kunnen crashen
-automatic_continue = True            # Of de volgende generatie automatisch start als de generatie klaar is
-max_time_enabled = True              # Of er een maximale tijd is
-allow_switch_cars = True             # Of je van auto mag wisselen
-random_roads = True                  # Of de weg elke generatie moet veranderen
-gamemodes = ["training", "versus"]   # Beschikbare gamemodes
-gamemode = ""                        # Gamemode
-match_started = False                # Of de race gestart is (vs mode)
-start_initiated = False              # Of de start sequence bezig is (vs mode)
-button_pressed = False               # Fysieke start button (vs mode)
-use_training_maps = True             # Of de circuits voor het trainen gebruikt worden
-paused = False                       # Paus
+debug_info: list[str] = []                      # Lijst met alles wat op het scherm komt te staan
+loose_cam = False                               # Of de camera stilstaat of aan een auto zit
+mortal_cars = True                              # Of de auto's kunnen crashen
+automatic_continue = True                       # Of de volgende generatie automatisch start als de generatie klaar is
+max_time_enabled = True                         # Of er een maximale tijd is
+allow_switch_cars = True                        # Of je van auto mag wisselen
+random_roads = True                             # Of de weg elke generatie moet veranderen
+gamemodes = ["training", "versus", "network"]   # Beschikbare gamemodes
+gamemode = ""                                   # Gamemode
+match_started = False                           # Of de race gestart is (vs mode)
+start_initiated = False                         # Of de start sequence bezig is (vs mode)
+button_pressed = False                          # Fysieke start button (vs mode)
+use_training_maps = True                        # Of de circuits voor het trainen gebruikt worden
+paused = False                                  # Paus
 
 layers = []
 
@@ -91,6 +91,8 @@ def main():
         gamemode = "training"
     elif "versus" in sys.argv:
         gamemode = "versus"
+    elif "network" in sys.argv:
+        gamemode = "network"
     else:
         gamemode = select_gamemode()
 
@@ -98,6 +100,8 @@ def main():
         start_training()
     elif gamemode == "versus":
         start_versus()
+    elif gamemode == "network":
+        start_network()
 
 
 def select_gamemode():
@@ -142,6 +146,14 @@ def start_versus():
 
     weights, biases, layers = network.get_network_from_file("alpha", 1800)
     game(1, 1, weights, biases, "alpha", 1800)
+
+
+def start_network():
+    global layers, match_started
+    match_started = True
+    weights, biases, layers, name = network.create_file()
+    ai_car_amount = int(input("\nAmount of cars: "))
+    game(ai_car_amount, 0, weights, biases, name, 0)
 
 
 # De simulatie: beginwaarden en de loop
@@ -263,7 +275,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
         debug_info.append(f"FPS: {int(clock.get_fps())}")
         debug_info.append(f"Generation: {name} {generation}")
         add_rounded_debug_info(f"Time: ", time.time() - gen_time - paused_time)
-        if gamemode == "training":
+        if gamemode == "training" or gamemode == "network":
             add_rounded_debug_info(f"Max Change: ", max_change)
 
         selected_car = cars[selected_car_index]
@@ -286,7 +298,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     alive_cars -= 1
 
             # De volgende generatie starten als alle auto's gecrasht zijn en uitzoeken wie de winnaar is
-            if alive_cars <= 0 < ai_car_amount and gamemode == "training":
+            if alive_cars <= 0 < ai_car_amount and (gamemode == "training" or gamemode == "network"):
                 best_car = Car(False, None, None)
                 for car in cars:
                     if car.is_ai:
@@ -311,6 +323,7 @@ def game(ai_car_amount, player_car_amount, starting_weights, starting_biases, na
                     if random_roads:
                         roads, edges, middle_segments, middle_lengths, total_length = create_roads()
                     generation += 1
+                    cam.target_pos = Vector(800.5, 0.5)
                     network.output_network_to_file(best_car.weights, best_car.biases, layers, name, generation)
 
             elif alive_cars <= 0 and (automatic_continue or continue_gen) and ai_car_amount == 0:
@@ -832,7 +845,7 @@ class Car:
 
     # Wanneer de auto van de weg af raakt, wordt de tijd opgeslagen en de afgelegde afstand berekend
     def crash(self, roads, middle_segments, middle_lengths, total_length, gen_time, paused_time):
-        if gamemode == "training":
+        if gamemode == "training" or gamemode == "network":
             self.on_road = False
             self.finished_time = time.time() - gen_time - paused_time
             self.calc_distance_to_finish(roads, middle_segments, middle_lengths, total_length)

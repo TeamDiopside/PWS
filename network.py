@@ -23,6 +23,8 @@ def create_file():
     output_network_to_file(weights, biases, layers, name, 0)
     print("Done!")
 
+    return weights, biases, layers, name
+
 
 def create_random_weights(height, width):
     matrix = []  # lege matrix maken
