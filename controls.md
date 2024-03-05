@@ -12,4 +12,4 @@
 |                  - | Subtract from max change          |
 |                  P | Add to max generation time        |
 |                  O | Subtract from max generation time |
-|              SPACE | Reset car/camera position         |
+|              SPACE | Pause simulation                  |
